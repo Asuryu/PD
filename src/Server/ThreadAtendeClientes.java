@@ -3,7 +3,6 @@ package Server;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.Socket;
 
 public class ThreadAtendeClientes extends Thread {
 
@@ -25,6 +24,7 @@ public class ThreadAtendeClientes extends Thread {
         } catch(IOException e) {
             System.out.println("[ ! ] An error has occurred while starting the server");
             e.printStackTrace();
+            return;
         }
 
         while(keepGoing){
