@@ -2,6 +2,8 @@ package Server;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Objects;
 
 public class Heartbeat implements Serializable, Comparable<Heartbeat> {
@@ -13,12 +15,14 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
     private final boolean available;
     private final float dbVersion;
     private final int activeConnections;
+    private final Instant sentTimestamp;
 
     public Heartbeat(int port, float dbVersion, int activeConnections, boolean available){
         this.port = port;
         this.available = available;
         this.dbVersion = dbVersion;
         this.activeConnections = activeConnections;
+        this.sentTimestamp = Instant.now();
     }
 
     public int getPort() {
@@ -37,6 +41,10 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
         return activeConnections;
     }
 
+    public Instant getSentTimestamp() {
+        return sentTimestamp;
+    }
+
     @Override
     public int compareTo(Heartbeat o) {
         return this.activeConnections - o.activeConnections;
@@ -44,7 +52,7 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
 
     @Override
     public String toString() {
-        return String.format("[ HEARTBEAT ] Active Connections: %d, Available: %b, dbVersion: %f, Port: %d", this.activeConnections, this.available, this.dbVersion, this.port);
+        return String.format("[ HEARTBEAT ]\nActive Connections: %d\nAvailable: %b\ndbVersion: %f\nPort: %d\nTime: %d", this.activeConnections, this.available, this.dbVersion, this.port, this.sentTimestamp.getEpochSecond());
     }
 
     @Override

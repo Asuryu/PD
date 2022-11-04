@@ -1,8 +1,9 @@
 package Server;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.*;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -11,6 +12,9 @@ public class ThreadHeartbeat extends Thread {
     private final String MULTICAST_IP;
     private final int SERVER_PORT;
     private final int LOCAL_PORT;
+
+    ReceiveHeartbeats rhb;
+    RemoveDeadServers rds;
 
     public final ArrayList<Heartbeat> onlineServers;
 
@@ -31,19 +35,22 @@ public class ThreadHeartbeat extends Thread {
             SocketAddress sa = new InetSocketAddress(ipGroup, SERVER_PORT);
             NetworkInterface ni = NetworkInterface.getByName("en0");
             ms.joinGroup(sa, ni);
-            System.out.println("[ * ] Joined multicast group " + MULTICAST_IP + ":" + SERVER_PORT);
 
-            ReceiveHeartbeats rhb = new ReceiveHeartbeats(ms, onlineServers);
-            RemoveDeadServers rds = new RemoveDeadServers(onlineServers);
+            System.out.println("[ * ] Joined multicast group " + MULTICAST_IP + ":" + SERVER_PORT);
+            rhb = new ReceiveHeartbeats(ms, onlineServers);
+            rds = new RemoveDeadServers(onlineServers);
+            rhb.setDaemon(true);
+            rhb.setDaemon(true);
             rhb.start();
+            rds.start();
         } catch (IOException e) {
             System.out.println("[ ! ] An error has occurred while setting up multicast");
-            e.printStackTrace();
+            System.out.println("      " + e.getMessage());
             return;
         }
 
         try{
-            while(true) {
+            while(!isInterrupted()) {
                 Thread.sleep(10000);
                 ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(bOut);
@@ -52,15 +59,19 @@ public class ThreadHeartbeat extends Thread {
                 out.flush();
                 DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), ipGroup, SERVER_PORT);
                 ms.send(dp);
-                System.out.println("[ · ] Sending heartbeat to " + MULTICAST_IP + ":" + SERVER_PORT);
+                //System.out.println("[ · ] Sending heartbeat to " + MULTICAST_IP + ":" + SERVER_PORT);
             }
-        }  catch (Exception e) {
+        } catch (InterruptedException ie){
+            System.out.println("[ - ] Exiting thread ThreadHeartbeat");
+            rds.interrupt();
+            rhb.interrupt();
+        } catch (Exception e) {
             System.out.println("[ ! ] An error has occurred while sending heartbeat");
-            e.printStackTrace();
+            System.out.println("      " + e.getMessage());
         }
     }
 
-    static class ReceiveHeartbeats extends Thread {
+    class ReceiveHeartbeats extends Thread {
 
         private final MulticastSocket ms;
         private final ArrayList<Heartbeat> onlineServers;
@@ -72,28 +83,27 @@ public class ThreadHeartbeat extends Thread {
 
         @Override
         public void run(){
-            while(true){
-                try{
+            while(!isInterrupted()){
+                try {
                     DatagramPacket dp = new DatagramPacket(new byte[256], 256);
                     ms.receive(dp);
                     ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(dp.getData(), 0, dp.getLength()));
                     Heartbeat hb = (Heartbeat) in.readObject();
-                    System.out.println(hb); // TODO: provisório (pode ser necessário lidar com feedback)
-                    synchronized (onlineServers){
-                        onlineServers.remove(hb);
-                        if(hb.isAvailable()) onlineServers.add(hb);
+                    synchronized (onlineServers) {
+                        if(!onlineServers.contains(hb)) onlineServers.add(hb);
                         Collections.sort(onlineServers);
                     }
-                    System.out.println(onlineServers);
+                } catch(SocketTimeoutException e) {
+                    // System.out.println("[ ! ] Timeout reached");
                 } catch (Exception e) {
                     System.out.println("[ ! ] An error has occurred while receiving the heartbeat");
-                    e.printStackTrace();
+                    System.out.println("      " + e.getMessage());
                 }
             }
         }
     }
 
-    static class RemoveDeadServers extends Thread {
+    class RemoveDeadServers extends Thread {
 
         private final ArrayList<Heartbeat> onlineServers;
 
@@ -104,15 +114,18 @@ public class ThreadHeartbeat extends Thread {
         @Override
         public void run() {
             try{
-                while(true){
-                    Thread.sleep(35000);
+                while(!isInterrupted()){
+                    Thread.sleep(500);
+                    Instant now = Instant.now();
                     synchronized (onlineServers){
-                        onlineServers.remove();
+                        boolean removed = onlineServers.removeIf(hb -> Duration.between(hb.getSentTimestamp(), now).toSeconds() > 35 || !hb.isAvailable());
+                        //if(removed) System.out.println("[ - ] Removed server from online servers' list");
                     }
                 }
+            } catch (InterruptedException ignored){
             } catch (Exception e){
-                System.out.println("[ ! ] An error occurred while removing dead server from list");
-                e.printStackTrace();
+                System.out.println("[ ! ] An error occurred while removing a dead server from list");
+                System.out.println("      " + e.getMessage());
             }
         }
     }
