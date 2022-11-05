@@ -4,36 +4,28 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.Collections;
 
 public class ThreadInicialHeartbeat extends Thread {
 
-    private final String MULTICAST_IP;
-    private final int MULTICAST_PORT;
+    private final Server server;
 
-    private final ArrayList<Heartbeat> onlineServers;
-
-    public ThreadInicialHeartbeat(String MULTICAST_IP, int MULTICAST_PORT, ArrayList<Heartbeat> onlineServers){
-        this.MULTICAST_IP = MULTICAST_IP;
-        this.MULTICAST_PORT = MULTICAST_PORT;
-        this.onlineServers = onlineServers;
+    public ThreadInicialHeartbeat(Server server){
+        this.server = server;
     }
 
     @Override
     public void run(){
-        InetAddress ipGroup;
-        MulticastSocket ms;
         try {
-            ms = new MulticastSocket(MULTICAST_PORT);
-            ms.setSoTimeout(30000);
-            ipGroup = InetAddress.getByName(MULTICAST_IP);
-            SocketAddress sa = new InetSocketAddress(ipGroup, MULTICAST_PORT);
-            NetworkInterface ni = NetworkInterface.getByName("en0");
-            ms.joinGroup(sa, ni);
+            server.ms = new MulticastSocket(server.MULTICAST_PORT);
+            server.ms.setSoTimeout(30000);
+            server.ipGroup = InetAddress.getByName(server.MULTICAST_IP);
+            server.sa = new InetSocketAddress(server.ipGroup, server.MULTICAST_PORT);
+            server.ni = NetworkInterface.getByName("en0");
+            server.ms.joinGroup(server.sa, server.ni);
         } catch (IOException e) {
             System.out.println("[ ! ] An error has occurred while setting up multicast");
-            e.printStackTrace();
+            System.out.println("      " + e.getMessage());
             return;
         }
 
@@ -41,12 +33,12 @@ public class ThreadInicialHeartbeat extends Thread {
             System.out.println("[ * ] Receiving heartbeats for the next 30 seconds");
             while(!isInterrupted()){
                 DatagramPacket dp = new DatagramPacket(new byte[256], 256);
-                ms.receive(dp);
+                server.ms.receive(dp);
                 ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(dp.getData(), 0, dp.getLength()));
                 Heartbeat hb = (Heartbeat) in.readObject();
-                synchronized (onlineServers){
-                    if(!onlineServers.contains(hb)) onlineServers.add(hb);
-                    Collections.sort(onlineServers);
+                synchronized (server.onlineServers){
+                    if(!server.onlineServers.contains(hb)) server.onlineServers.add(hb);
+                    Collections.sort(server.onlineServers);
                 }
             }
         } catch(SocketTimeoutException e) {

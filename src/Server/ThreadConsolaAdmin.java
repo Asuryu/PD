@@ -1,16 +1,13 @@
 package Server;
 
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ThreadConsolaAdmin extends Thread {
 
-    private final ArrayList<Heartbeat> onlineServers;
-    private final ArrayList<Thread> threads;
+    private final Server server;
 
-    public ThreadConsolaAdmin(ArrayList<Heartbeat> onlineServers, ArrayList<Thread> threads){
-        this.onlineServers = onlineServers;
-        this.threads = threads;
+    public ThreadConsolaAdmin(Server server){
+        this.server = server;
     }
 
     @Override
@@ -21,7 +18,7 @@ public class ThreadConsolaAdmin extends Thread {
             String command = sc.nextLine();
             switch(command.toUpperCase()){
                 case "EXIT":
-                    for(Thread t : threads) t.interrupt();
+                    for(Thread t : server.threads) t.interrupt();
                     break;
                 default:
                     System.out.println("[ ! ] Command '" + command + "' not recognized");
