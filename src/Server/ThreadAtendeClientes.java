@@ -1,33 +1,40 @@
 package Server;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class ThreadAtendeClientes extends Thread {
 
-    private final int SERVER_PORT;
-    private final String DATABASE_PATH;
+    private final Server server;
 
-    public ThreadAtendeClientes(int SERVER_PORT, String DATABASE_PATH){
-        this.SERVER_PORT = SERVER_PORT;
-        this.DATABASE_PATH = DATABASE_PATH;
+    public ThreadAtendeClientes(Server server){
+        this.server = server;
     }
 
     @Override
     public void run() {
         try{
-            DatagramSocket ds = new DatagramSocket(SERVER_PORT);
-            System.out.println("[ * ] Starting server at " + InetAddress.getLocalHost().getHostAddress() + ":" + SERVER_PORT);
+            server.ds = new DatagramSocket(server.UDP_PORT);
+            System.out.println("[ * ] Starting server at " + InetAddress.getLocalHost().getHostAddress() + ":" + server.UDP_PORT);
         } catch(IOException e) {
             System.out.println("[ ! ] An error has occurred while starting the server");
             System.out.println("      " + e.getMessage());
             return;
         }
 
-        while(!isInterrupted()){
-            // Socket s = new Socket();
+        try{
+            while(!isInterrupted()){
+                DatagramPacket dp = new DatagramPacket(new byte[256], 256);
+                server.ds.receive(dp);
+                System.out.println("[ * ] Received packet from " + dp.getAddress().getHostAddress() + ":" + dp.getPort());
+            }
+        } catch (IOException e) {
+            System.out.println("[ ! ] An error has occurred while receiving a packet");
+            System.out.println("      " + e.getMessage());
         }
+
         System.out.println("[ - ] Exiting thread ThreadAtendeClientes");
     }
 

@@ -4,41 +4,26 @@ import java.io.*;
 import java.net.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collections;
 
 public class ThreadHeartbeat extends Thread {
 
-    private final String MULTICAST_IP;
-    private final int SERVER_PORT;
-    private final int LOCAL_PORT;
+    protected final Server server;
 
     ReceiveHeartbeats rhb;
     RemoveDeadServers rds;
 
-    public final ArrayList<Heartbeat> onlineServers;
-
-    public ThreadHeartbeat(String MULTICAST_IP, int SERVER_PORT, int LOCAL_PORT, ArrayList<Heartbeat> onlineServers){
-        this.MULTICAST_IP = MULTICAST_IP;
-        this.SERVER_PORT = SERVER_PORT;
-        this.LOCAL_PORT = LOCAL_PORT;
-        this.onlineServers = onlineServers;
+    public ThreadHeartbeat(Server server){
+        this.server = server;
     }
 
     @Override
     public void run(){
-        InetAddress ipGroup;
-        MulticastSocket ms;
         try {
-            ms = new MulticastSocket(SERVER_PORT);
-            ipGroup = InetAddress.getByName(MULTICAST_IP);
-            SocketAddress sa = new InetSocketAddress(ipGroup, SERVER_PORT);
-            NetworkInterface ni = NetworkInterface.getByName("en0");
-            ms.joinGroup(sa, ni);
-
-            System.out.println("[ * ] Joined multicast group " + MULTICAST_IP + ":" + SERVER_PORT);
-            rhb = new ReceiveHeartbeats(ms, onlineServers);
-            rds = new RemoveDeadServers(onlineServers);
+            server.ms.joinGroup(server.sa, server.ni);
+            System.out.println("[ * ] Joined multicast group " + server.MULTICAST_IP + ":" + server.MULTICAST_PORT);
+            rhb = new ReceiveHeartbeats();
+            rds = new RemoveDeadServers();
             rhb.setDaemon(true);
             rhb.setDaemon(true);
             rhb.start();
@@ -54,12 +39,12 @@ public class ThreadHeartbeat extends Thread {
                 Thread.sleep(10000);
                 ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(bOut);
-                Heartbeat hb = new Heartbeat(LOCAL_PORT, 0.0f, 0, true);
+                Heartbeat hb = new Heartbeat(server.TCP_PORT, 1, 0, true);
                 out.writeObject(hb);
                 out.flush();
-                DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), ipGroup, SERVER_PORT);
-                ms.send(dp);
-                //System.out.println("[ · ] Sending heartbeat to " + MULTICAST_IP + ":" + SERVER_PORT);
+                DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
+                server.ms.send(dp);
+                System.out.println("[ · ] Sending heartbeat to " + server.MULTICAST_IP + ":" + server.MULTICAST_PORT);
             }
         } catch (InterruptedException ie){
             System.out.println("[ - ] Exiting thread ThreadHeartbeat");
@@ -73,25 +58,17 @@ public class ThreadHeartbeat extends Thread {
 
     class ReceiveHeartbeats extends Thread {
 
-        private final MulticastSocket ms;
-        private final ArrayList<Heartbeat> onlineServers;
-
-        public ReceiveHeartbeats(MulticastSocket ms, ArrayList<Heartbeat> onlineServers){
-            this.ms = ms;
-            this.onlineServers = onlineServers;
-        }
-
         @Override
         public void run(){
             while(!isInterrupted()){
                 try {
                     DatagramPacket dp = new DatagramPacket(new byte[256], 256);
-                    ms.receive(dp);
+                    server.ms.receive(dp);
                     ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(dp.getData(), 0, dp.getLength()));
                     Heartbeat hb = (Heartbeat) in.readObject();
-                    synchronized (onlineServers) {
-                        if(!onlineServers.contains(hb)) onlineServers.add(hb);
-                        Collections.sort(onlineServers);
+                    synchronized (server.onlineServers) {
+                        if(!server.onlineServers.contains(hb)) server.onlineServers.add(hb);
+                        Collections.sort(server.onlineServers);
                     }
                 } catch(SocketTimeoutException e) {
                     // System.out.println("[ ! ] Timeout reached");
@@ -105,20 +82,14 @@ public class ThreadHeartbeat extends Thread {
 
     class RemoveDeadServers extends Thread {
 
-        private final ArrayList<Heartbeat> onlineServers;
-
-        public RemoveDeadServers(ArrayList<Heartbeat> onlineServers){
-            this.onlineServers = onlineServers;
-        }
-
         @Override
         public void run() {
             try{
                 while(!isInterrupted()){
                     Thread.sleep(500);
                     Instant now = Instant.now();
-                    synchronized (onlineServers){
-                        boolean removed = onlineServers.removeIf(hb -> Duration.between(hb.getSentTimestamp(), now).toSeconds() > 35 || !hb.isAvailable());
+                    synchronized (server.onlineServers){
+                        server.onlineServers.removeIf(hb -> Duration.between(hb.getSentTimestamp(), now).toSeconds() > 35 || !hb.isAvailable());
                         //if(removed) System.out.println("[ - ] Removed server from online servers' list");
                     }
                 }

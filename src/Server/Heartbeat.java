@@ -3,7 +3,6 @@ package Server;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Date;
 import java.util.Objects;
 
 public class Heartbeat implements Serializable, Comparable<Heartbeat> {
@@ -13,11 +12,11 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
 
     private final int port;
     private final boolean available;
-    private final float dbVersion;
+    private final int dbVersion;
     private final int activeConnections;
     private final Instant sentTimestamp;
 
-    public Heartbeat(int port, float dbVersion, int activeConnections, boolean available){
+    public Heartbeat(int port, int dbVersion, int activeConnections, boolean available){
         this.port = port;
         this.available = available;
         this.dbVersion = dbVersion;
@@ -33,7 +32,7 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
         return available;
     }
 
-    public float getDbVersion() {
+    public int getDbVersion() {
         return dbVersion;
     }
 
@@ -52,7 +51,7 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
 
     @Override
     public String toString() {
-        return String.format("[ HEARTBEAT ]\nActive Connections: %d\nAvailable: %b\ndbVersion: %f\nPort: %d\nTime: %d", this.activeConnections, this.available, this.dbVersion, this.port, this.sentTimestamp.getEpochSecond());
+        return String.format("[ HEARTBEAT ]\nActive Connections: %d\nAvailable: %b\ndbVersion: %d\nPort: %d\nTime: %d", this.activeConnections, this.available, this.dbVersion, this.port, this.sentTimestamp.getEpochSecond());
     }
 
     @Override
