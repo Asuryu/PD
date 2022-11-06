@@ -1,4 +1,7 @@
-package Server;
+package Server.Threads;
+
+import Server.Heartbeat;
+import Server.Servidor;
 
 import java.io.*;
 import java.net.*;
@@ -8,18 +11,19 @@ import java.util.Collections;
 
 public class ThreadHeartbeat extends Thread {
 
-    protected final Server server;
+    protected final Servidor server;
 
     ReceiveHeartbeats rhb;
     RemoveDeadServers rds;
 
-    public ThreadHeartbeat(Server server){
+    public ThreadHeartbeat(Servidor server){
         this.server = server;
     }
 
     @Override
     public void run(){
         try {
+            server.ms.setSoTimeout(0);
             server.ms.joinGroup(server.sa, server.ni);
             System.out.println("[ * ] Joined multicast group " + server.MULTICAST_IP + ":" + server.MULTICAST_PORT);
             rhb = new ReceiveHeartbeats();
@@ -31,7 +35,7 @@ public class ThreadHeartbeat extends Thread {
         } catch (IOException e) {
             System.out.println("[ ! ] An error has occurred while setting up multicast");
             System.out.println("      " + e.getMessage());
-            return;
+            System.exit(1);
         }
 
         try{
@@ -44,7 +48,7 @@ public class ThreadHeartbeat extends Thread {
                 out.flush();
                 DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
                 server.ms.send(dp);
-                System.out.println("[ · ] Sending heartbeat to " + server.MULTICAST_IP + ":" + server.MULTICAST_PORT);
+                //System.out.println("[ · ] Sending heartbeat to " + server.MULTICAST_IP + ":" + server.MULTICAST_PORT);
             }
         } catch (InterruptedException ie){
             System.out.println("[ - ] Exiting thread ThreadHeartbeat");
@@ -70,6 +74,7 @@ public class ThreadHeartbeat extends Thread {
                         if(!server.onlineServers.contains(hb)) server.onlineServers.add(hb);
                         Collections.sort(server.onlineServers);
                     }
+                    // TODO: detetar se a versão da base de dados local é inferior à do Heartbeat
                 } catch(SocketTimeoutException e) {
                     // System.out.println("[ ! ] Timeout reached");
                 } catch (Exception e) {

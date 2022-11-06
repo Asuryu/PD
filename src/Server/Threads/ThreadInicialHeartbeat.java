@@ -1,16 +1,21 @@
-package Server;
+package Server.Threads;
+
+import Server.Heartbeat;
+import Server.Servidor;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.*;
+import java.nio.file.Files;
 import java.util.Collections;
 
 public class ThreadInicialHeartbeat extends Thread {
 
-    private final Server server;
+    private final Servidor server;
 
-    public ThreadInicialHeartbeat(Server server){
+    public ThreadInicialHeartbeat(Servidor server){
         this.server = server;
     }
 
@@ -26,7 +31,7 @@ public class ThreadInicialHeartbeat extends Thread {
         } catch (IOException e) {
             System.out.println("[ ! ] An error has occurred while setting up multicast");
             System.out.println("      " + e.getMessage());
-            return;
+            System.exit(1);
         }
 
         try{
@@ -42,7 +47,19 @@ public class ThreadInicialHeartbeat extends Thread {
                 }
             }
         } catch(SocketTimeoutException e) {
-            // System.out.println("[ ! ] Timeout reached");
+            if(server.onlineServers.isEmpty()){
+                try {
+                    File original = new File(server.DATABASE_ORIGINAL);
+                    File copy = new File(server.DATABASES_PATH + server.DATABASE_NAME);
+                    if(!copy.exists()){
+                        System.out.println("[ ! ] No servers are online, creating a new database");
+                        Files.copy(original.toPath(), copy.toPath());
+                    }
+                } catch (IOException ex) {
+                    System.out.println("[ ! ] An error has occurred while creating the database");
+                    System.out.println("      " + ex.getMessage());
+                }
+            }
         } catch(Exception ie){
             System.out.println("[ ! ] An error has occurred while receiving initial heartbeats");
             System.out.println("      " + ie.getMessage());

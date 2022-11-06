@@ -1,12 +1,14 @@
-package Server;
+package Server.Threads;
+
+import Server.Servidor;
 
 import java.util.Scanner;
 
 public class ThreadConsolaAdmin extends Thread {
 
-    private final Server server;
+    private final Servidor server;
 
-    public ThreadConsolaAdmin(Server server){
+    public ThreadConsolaAdmin(Servidor server){
         this.server = server;
     }
 
