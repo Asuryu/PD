@@ -4,6 +4,9 @@ import Server.Servidor;
 
 import java.util.Scanner;
 
+/**
+ * Classe que representa a thread responsável por receber comandos do administrador
+ */
 public class ThreadConsolaAdmin extends Thread {
 
     private final Servidor server;

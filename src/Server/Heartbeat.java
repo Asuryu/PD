@@ -5,6 +5,9 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 
+/**
+ * Classe que representa um heartbeat
+ */
 public class Heartbeat implements Serializable, Comparable<Heartbeat> {
 
     @Serial
@@ -16,6 +19,13 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
     private final int activeConnections;
     private final Instant sentTimestamp;
 
+    /**
+     * Construtor da classe Heartbeat
+     * @param port Porta do servidor
+     * @param available Disponibilidade do servidor
+     * @param dbVersion Versão da base de dados
+     * @param activeConnections Número de conexões ativas
+     */
     public Heartbeat(int port, int dbVersion, int activeConnections, boolean available){
         this.port = port;
         this.available = available;
@@ -44,6 +54,12 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
         return sentTimestamp;
     }
 
+    /**
+     * Método que compara dois heartbeats
+     * Serve para ordenar a lista de heartbeats
+     * @param o Heartbeat a comparar
+     * @return 0 se tiverem o mesmo número de conexões ativas, >=1 se o primeiro heartbeat tiver mais conexões, <=-1 se o primeiro heartbeat tiver menos conexões
+     */
     @Override
     public int compareTo(Heartbeat o) {
         return this.activeConnections - o.activeConnections;
@@ -54,6 +70,11 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
         return String.format("[ HEARTBEAT ]\nActive Connections: %d\nAvailable: %b\ndbVersion: %d\nPort: %d\nTime: %d", this.activeConnections, this.available, this.dbVersion, this.port, this.sentTimestamp.getEpochSecond());
     }
 
+    /**
+     * Método equals da classe Heartbeat
+     * @param o Objeto a comparar
+     * @return true se os dois objetos tiverem o mesmo porto, false caso contrário
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

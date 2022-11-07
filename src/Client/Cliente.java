@@ -7,6 +7,10 @@ import java.io.ObjectInputStream;
 import java.net.*;
 import java.util.ArrayList;
 
+/**
+ * Representa um cliente do sistema
+ * O cliente é responsável por enviar um pedido de listagem de servidores disponíveis
+ */
 public class Cliente {
     public static void main(String[] args) throws Exception {
         DatagramSocket ds = new DatagramSocket();

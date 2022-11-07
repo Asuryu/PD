@@ -9,6 +9,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 
+/**
+ * Classe que representa a thread que trata dos heartbeats
+ * Esta thread em particular envia os heartbeats para o endereço multicast
+ */
 public class ThreadHeartbeat extends Thread {
 
     protected final Servidor server;
@@ -40,10 +44,10 @@ public class ThreadHeartbeat extends Thread {
 
         try{
             while(!isInterrupted()) {
-                Thread.sleep(10000);
+                Thread.sleep(10000); // Enviar heartbeat de 10 em 10 segundos
                 ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(bOut);
-                Heartbeat hb = new Heartbeat(server.TCP_PORT, 1, 0, true);
+                Heartbeat hb = new Heartbeat(server.TCP_PORT, 1, 0, true); //TODO: preencher com informação correta
                 out.writeObject(hb);
                 out.flush();
                 DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
@@ -60,6 +64,12 @@ public class ThreadHeartbeat extends Thread {
         }
     }
 
+    /**
+     * Classe que representa a thread que recebe os heartbeats
+     * Esta thread em particular recebe os heartbeats
+     * e adiciona os servidores à lista de servidores online
+     * ordenada por carga
+     */
     class ReceiveHeartbeats extends Thread {
 
         @Override
@@ -69,10 +79,10 @@ public class ThreadHeartbeat extends Thread {
                     DatagramPacket dp = new DatagramPacket(new byte[256], 256);
                     server.ms.receive(dp);
                     ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(dp.getData(), 0, dp.getLength()));
-                    Heartbeat hb = (Heartbeat) in.readObject();
+                    Heartbeat hb = (Heartbeat) in.readObject(); // Obtém o heartbeat do servidor
                     synchronized (server.onlineServers) {
-                        if(!server.onlineServers.contains(hb)) server.onlineServers.add(hb);
-                        Collections.sort(server.onlineServers);
+                        if(!server.onlineServers.contains(hb)) server.onlineServers.add(hb); // Adiciona o servidor à lista de servidores online
+                        Collections.sort(server.onlineServers); // Ordena a lista de servidores online por carga
                     }
                     // TODO: detetar se a versão da base de dados local é inferior à do Heartbeat
                 } catch(SocketTimeoutException e) {
@@ -85,17 +95,27 @@ public class ThreadHeartbeat extends Thread {
         }
     }
 
+    /**
+     * Classe que representa a thread que remove os heartbeats
+     * Esta thread em particular remove os heartbeats
+     * da lista de servidores online que já não estão online
+     * ou que não enviam heartbeats há mais de 35 segundos
+     */
     class RemoveDeadServers extends Thread {
 
         @Override
         public void run() {
             try{
                 while(!isInterrupted()){
-                    Thread.sleep(500);
+                    Thread.sleep(500); // Verificar se algum servidor já não está online a cada 500ms
                     Instant now = Instant.now();
                     synchronized (server.onlineServers){
-                        server.onlineServers.removeIf(hb -> Duration.between(hb.getSentTimestamp(), now).toSeconds() > 35 || !hb.isAvailable());
-                        //if(removed) System.out.println("[ - ] Removed server from online servers' list");
+                        // Remove os servidores que já não estão online ou que não enviam heartbeats há mais de 35 segundos
+                        boolean removed = server.onlineServers.removeIf(hb -> Duration.between(hb.getSentTimestamp(), now).toSeconds() > 35 || hb.isAvailable());
+                        if(removed){
+                            Collections.sort(server.onlineServers); // Ordena a lista de servidores online por carga
+                            //System.out.println("[ · ] Removed dead servers");
+                        }
                     }
                 }
             } catch (InterruptedException ignored){

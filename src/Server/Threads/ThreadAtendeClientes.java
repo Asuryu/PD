@@ -11,8 +11,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Collections;
 
+/**
+ * Classe que representa a thread que recebe as ligações dos clientes através de UDP
+ */
 public class ThreadAtendeClientes extends Thread {
 
     private final Servidor server;
@@ -38,9 +40,10 @@ public class ThreadAtendeClientes extends Thread {
                 server.ds.receive(dp);
                 //System.out.println("[ * ] Received packet from " + dp.getAddress().getHostAddress() + ":" + dp.getPort());
 
+                // Cria array availableServers apenas com os servidores disponíveis e ordenados por carga
                 ArrayList<Heartbeat> availableServers = new ArrayList<>(server.onlineServers);
-                availableServers.removeIf(hb -> !hb.isAvailable());
-                availableServers.sort(new HeartbeatComparatorLoad());
+                availableServers.removeIf(Heartbeat::isAvailable); // Remove os servidores indisponíveis
+                availableServers.sort(new HeartbeatComparatorLoad()); // Ordena os servidores por carga
 
                 ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(bOut);

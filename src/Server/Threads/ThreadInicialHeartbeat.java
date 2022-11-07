@@ -11,6 +11,11 @@ import java.net.*;
 import java.nio.file.Files;
 import java.util.Collections;
 
+/**
+ * Classe que representa a thread que recebe os heartbeats no começo do servidor
+ * Após 30 segundos esta thread termina
+ * É responsável por reconhecer os servidores na rede
+ */
 public class ThreadInicialHeartbeat extends Thread {
 
     private final Servidor server;
@@ -40,15 +45,15 @@ public class ThreadInicialHeartbeat extends Thread {
                 DatagramPacket dp = new DatagramPacket(new byte[256], 256);
                 server.ms.receive(dp);
                 ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(dp.getData(), 0, dp.getLength()));
-                Heartbeat hb = (Heartbeat) in.readObject();
+                Heartbeat hb = (Heartbeat) in.readObject(); // Recebe o heartbeat
                 synchronized (server.onlineServers){
-                    if(!server.onlineServers.contains(hb)) server.onlineServers.add(hb);
-                    Collections.sort(server.onlineServers);
+                    if(!server.onlineServers.contains(hb)) server.onlineServers.add(hb); // Adiciona o servidor à lista de servidores online
+                    Collections.sort(server.onlineServers); // Ordena os servidores por carga
                 }
             }
         } catch(SocketTimeoutException e) {
-            if(server.onlineServers.isEmpty()){
-                try {
+            if(server.onlineServers.isEmpty()){ // Se não houver servidores online
+                try { // Tenta criar uma nova base de dados
                     File original = new File(server.DATABASE_ORIGINAL);
                     File copy = new File(server.DATABASES_PATH + server.DATABASE_NAME);
                     if(!copy.exists()){
