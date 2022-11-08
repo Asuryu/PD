@@ -42,7 +42,7 @@ public class ThreadAtendeClientes extends Thread {
 
                 // Cria array availableServers apenas com os servidores disponíveis e ordenados por carga
                 ArrayList<Heartbeat> availableServers = new ArrayList<>(server.onlineServers);
-                availableServers.removeIf(Heartbeat::isAvailable); // Remove os servidores indisponíveis
+                availableServers.removeIf(hb -> !hb.isAvailable());
                 availableServers.sort(new HeartbeatComparatorLoad()); // Ordena os servidores por carga
 
                 ByteArrayOutputStream bOut = new ByteArrayOutputStream();
