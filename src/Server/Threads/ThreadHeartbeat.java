@@ -82,6 +82,10 @@ public class ThreadHeartbeat extends Thread {
                     Heartbeat hb = (Heartbeat) in.readObject(); // Obtém o heartbeat do servidor
                     synchronized (server.onlineServers) {
                         if(!server.onlineServers.contains(hb)) server.onlineServers.add(hb); // Adiciona o servidor à lista de servidores online
+                        else {
+                            int index = server.onlineServers.indexOf(hb);
+                            server.onlineServers.set(index, hb);
+                        }
                         Collections.sort(server.onlineServers); // Ordena a lista de servidores online por carga
                     }
                     // TODO: detetar se a versão da base de dados local é inferior à do Heartbeat
@@ -111,11 +115,7 @@ public class ThreadHeartbeat extends Thread {
                     Instant now = Instant.now();
                     synchronized (server.onlineServers){
                         // Remove os servidores que já não estão online ou que não enviam heartbeats há mais de 35 segundos
-                        boolean removed = server.onlineServers.removeIf(hb -> Duration.between(hb.getSentTimestamp(), now).toSeconds() > 35 || hb.isAvailable());
-                        if(removed){
-                            Collections.sort(server.onlineServers); // Ordena a lista de servidores online por carga
-                            //System.out.println("[ · ] Removed dead servers");
-                        }
+                        server.onlineServers.removeIf(hb -> Duration.between(hb.getSentTimestamp(), now).toSeconds() > 35 || !hb.isAvailable());
                     }
                 }
             } catch (InterruptedException ignored){
