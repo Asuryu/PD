@@ -1,5 +1,6 @@
 package Server.Threads;
 
+import Client.Cliente;
 import Server.Comparators.HeartbeatComparatorLoad;
 import Server.Heartbeat;
 import Server.Servidor;
@@ -53,6 +54,7 @@ public class ThreadAtendeClientes extends Thread {
                 DatagramPacket dpSend = new DatagramPacket(bOut.toByteArray(), bOut.size(), dp.getAddress(), dp.getPort());
                 server.ds.send(dpSend);
                 System.out.println("[ * ] Sent list of servers to client " + dp.getAddress().getHostAddress() + ":" + dp.getPort());
+                ArrayList<Cliente> activeConnections = new ArrayList<>(server.activeConnections);
             }
         } catch (IOException e) {
             System.out.println("[ ! ] An error has occurred while receiving a packet");

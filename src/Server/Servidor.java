@@ -1,5 +1,6 @@
 package Server;
 
+import Client.Cliente;
 import Server.Comparators.HeartbeatComparatorLoad;
 import Server.Threads.*;
 
@@ -8,6 +9,9 @@ import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -19,7 +23,7 @@ public class Servidor {
     public final String DATABASE_NAME; // Name of the database file
     public final String JDBC_STRING; // JDBC string to connect to the database
     public Connection dbConn; // Connection to the database
-
+    public int dbVersion; // Version of the database
     public ServerSocket s; // Socket to receive TCP connections
     public int TCP_PORT; // Port to receive TCP connections
 
@@ -35,6 +39,8 @@ public class Servidor {
 
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public final ArrayList<Heartbeat> onlineServers = new ArrayList<>(); // List of online servers
+
+    public final ArrayList<Cliente> activeConnections = new ArrayList<>(); // List of active connections
 
     public Servidor(int UDP_PORT, String DATABASES_PATH) throws Exception {
         this.UDP_PORT = UDP_PORT;
@@ -79,7 +85,6 @@ public class Servidor {
             fos.close();
             s.close();
         }
-
 
         ThreadTCP tcp = new ThreadTCP(this);
         ThreadAtendeClientes tac = new ThreadAtendeClientes(this);

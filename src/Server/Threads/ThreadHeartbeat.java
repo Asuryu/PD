@@ -1,12 +1,17 @@
 package Server.Threads;
 
+import Client.Cliente;
 import Server.Heartbeat;
 import Server.Servidor;
 
 import java.io.*;
 import java.net.*;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 
 /**
@@ -16,7 +21,6 @@ import java.util.Collections;
 public class ThreadHeartbeat extends Thread {
 
     protected final Servidor server;
-
     ReceiveHeartbeats rhb;
     RemoveDeadServers rds;
 
@@ -26,6 +30,7 @@ public class ThreadHeartbeat extends Thread {
 
     @Override
     public void run(){
+
         try {
             server.ms.setSoTimeout(0);
             server.ms.joinGroup(server.sa, server.ni);
@@ -47,7 +52,9 @@ public class ThreadHeartbeat extends Thread {
                 Thread.sleep(10000); // Enviar heartbeat de 10 em 10 segundos
                 ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(bOut);
-                Heartbeat hb = new Heartbeat(server.TCP_PORT, 1, 0, true); //TODO: preencher com informação correta
+                ThreadLeitorDB tldb = new ThreadLeitorDB(server, "dbVersion");
+                System.out.println("Database version: " + server.dbVersion); // DEBUG: Not working properly? Não atualiza o dbVersion
+                Heartbeat hb = new Heartbeat(server.TCP_PORT, server.dbVersion, server.activeConnections.size(), true); //TODO: preencher com informação correta
                 out.writeObject(hb);
                 out.flush();
                 DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
