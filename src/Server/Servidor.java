@@ -40,7 +40,7 @@ public class Servidor {
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public final ArrayList<Heartbeat> onlineServers = new ArrayList<>(); // List of online servers
 
-    public final ArrayList<Cliente> activeConnections = new ArrayList<>(); // List of active connections
+    public final ArrayList<Socket> activeConnections = new ArrayList<>(); // List of active connections
 
     public Servidor(int UDP_PORT, String DATABASES_PATH) throws Exception {
         this.UDP_PORT = UDP_PORT;
@@ -48,6 +48,7 @@ public class Servidor {
         this.DATABASE_NAME = "PD-2022-23-TP-" + UDP_PORT + ".db";
         this.JDBC_STRING = "jdbc:sqlite:" + DATABASES_PATH + DATABASE_NAME;
 
+        mostraASCII();
         s = new ServerSocket(0);
         TCP_PORT = s.getLocalPort();
 
@@ -107,6 +108,15 @@ public class Servidor {
         s.close();
         ds.close();
         ms.close();
+    }
+
+    private void mostraASCII(){
+        System.out.println("██████╗  ██████╗ ██╗      ██████╗ ██████╗");
+        System.out.println("██╔══██╗██╔═══██╗██║      ██╔══██╗██╔══██╗");
+        System.out.println("██████╔╝██║   ██║██║█████╗██████╔╝██║  ██║");
+        System.out.println("██╔══██╗██║   ██║██║╚════╝██╔═══╝ ██║  ██║");
+        System.out.println("██████╔╝╚██████╔╝███████╗ ██║     ██████╔╝");
+        System.out.println("╚═════╝  ╚═════╝ ╚══════╝ ╚═╝     ╚═════╝ \n");
     }
 
     public static void main(String[] args) {

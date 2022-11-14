@@ -29,6 +29,10 @@ public class ThreadTCP extends Thread {
               while(!isInterrupted()){
                   Socket client = server.s.accept();
                   System.out.println("[ * ] Received TCP connection from " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
+                  synchronized (server.activeConnections) {
+                      server.activeConnections.add(client);
+                  }
+                  // TODO: abre thread para atender cliente particularmente
                   ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
                   ObjectInputStream in = new ObjectInputStream(client.getInputStream());
                   TCPMessages request = (TCPMessages)in.readObject(); // Obtém a mensagem do cliente

@@ -54,7 +54,7 @@ public class ThreadHeartbeat extends Thread {
                 ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(bOut);
                 server.dbVersion = getDbVersion();
-                System.out.println("Database version: " + server.dbVersion); // DEBUG: Not working properly? Não atualiza o dbVersion
+                // System.out.println("Database version: " + server.dbVersion);
                 Heartbeat hb = new Heartbeat(server.TCP_PORT, server.dbVersion, server.activeConnections.size(), true); //TODO: preencher com informação correta
                 out.writeObject(hb);
                 out.flush();

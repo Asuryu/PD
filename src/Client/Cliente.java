@@ -27,5 +27,6 @@ public class Cliente {
         for (Heartbeat heartbeat : availableServers) {
             System.out.println(heartbeat);
         }
+        // TODO: tentar ligar por TCP ao primeiro servidor da lista (se falhar liga ao segundo, etc...)
     }
 }
