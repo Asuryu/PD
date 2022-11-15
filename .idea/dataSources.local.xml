@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="dataSourceStorageLocal" created-in="IU-222.4167.29">
+  <component name="dataSourceStorageLocal" created-in="IU-221.5787.30">
     <data-source name="PD-2022-23-TP" uuid="9da795b4-e138-4ffa-ab10-f135abca028b">
       <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="SQLITE" exact-version="0" />
       <auth-provider>no-auth</auth-provider>
@@ -9,6 +9,10 @@
     <data-source name="PD-2022-23-TP-5002" uuid="bb05e767-aa69-418e-9b73-856b6a39760d">
       <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="SQLITE" exact-version="0" />
       <auth-provider>no-auth</auth-provider>
+      <schema-mapping />
+    </data-source>
+    <data-source name="PD-2022-23-TP-5002 [2]" uuid="bc9a5903-8aff-4a46-97fe-6148a9c629d9">
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="SQLITE" exact-version="0" />
       <schema-mapping />
     </data-source>
   </component>
