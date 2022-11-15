@@ -34,9 +34,6 @@ public class ThreadTCP extends Thread {
                   }
                   ThreadCliente threadCliente = new ThreadCliente(server, client);
                   threadCliente.start();
-                  synchronized (server.activeConnections) {
-                      server.activeConnections.add(client);
-                  }
               }
          } catch (Exception e) {
               System.out.println("[ ! ] An error has occurred while receiving a TCP connection");

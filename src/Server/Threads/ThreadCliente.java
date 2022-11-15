@@ -6,6 +6,7 @@ import Server.TCPMessages;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 
 public class ThreadCliente extends Thread{
     protected final Servidor server;
@@ -21,8 +22,14 @@ public class ThreadCliente extends Thread{
             ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(client.getInputStream());
             TCPMessages request = (TCPMessages)in.readObject(); // Obtém a mensagem do cliente
+            System.out.println(request);
             switch (request) {
                 case GET_DATABASE -> getDatabase();
+                case LOGIN -> {
+                    out.writeObject("Dá-me as tuas credenciais");
+                    HashMap<String, String> recv = (HashMap<String, String>) in.readObject();
+                    System.out.println(recv);
+                }
                 //case ... -> func();
             }
             client.close();
