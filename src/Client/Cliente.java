@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * Representa um cliente do sistema
@@ -26,5 +27,6 @@ public class Cliente {
         String live = "I m live";
         DatagramPacket datagramPacket = new DatagramPacket(live.getBytes(), live.length());
         datagramSocket.send(datagramPacket);
+
     }
 }

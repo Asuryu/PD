@@ -13,20 +13,24 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
     @Serial
     private static final long serialVersionUID = 2L;
 
+    private final String ip;
     private final int port;
     private final boolean available;
     private final int dbVersion;
+
     private final int activeConnections;
     private final Instant sentTimestamp;
 
     /**
      * Construtor da classe Heartbeat
+     * @param ip IP do servidor
      * @param port Porta do servidor
      * @param available Disponibilidade do servidor
      * @param dbVersion Versão da base de dados
      * @param activeConnections Número de conexões ativas
      */
-    public Heartbeat(int port, int dbVersion, int activeConnections, boolean available){
+    public Heartbeat(String ip, int port, int dbVersion, int activeConnections, boolean available){
+        this.ip = ip;
         this.port = port;
         this.available = available;
         this.dbVersion = dbVersion;
@@ -34,13 +38,13 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
         this.sentTimestamp = Instant.now();
     }
 
+    public String getIp() { return ip; }
+
     public int getPort() {
         return port;
     }
 
-    public boolean isAvailable() {
-        return available;
-    }
+    public boolean isAvailable() { return available; }
 
     public int getDbVersion() {
         return dbVersion;
@@ -67,7 +71,7 @@ public class Heartbeat implements Serializable, Comparable<Heartbeat> {
 
     @Override
     public String toString() {
-        return String.format("[ HEARTBEAT ]\nActive Connections: %d\nAvailable: %b\ndbVersion: %d\nPort: %d\nTime: %d", this.activeConnections, this.available, this.dbVersion, this.port, this.sentTimestamp.getEpochSecond());
+        return String.format("[ HEARTBEAT ]\nActive Connections: %d\nAvailable: %b\ndbVersion: %d\nIP: %s\nPort: %d\nTime: %d", this.activeConnections, this.available, this.dbVersion, this.ip, this.port, this.sentTimestamp.getEpochSecond());
     }
 
     /**

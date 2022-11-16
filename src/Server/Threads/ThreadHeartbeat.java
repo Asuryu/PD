@@ -47,7 +47,7 @@ public class ThreadHeartbeat extends Thread {
                 Thread.sleep(10000); // Enviar heartbeat de 10 em 10 segundos
                 ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(bOut);
-                Heartbeat hb = new Heartbeat(server.TCP_PORT, 1, 0, true); //TODO: preencher com informação correta
+                Heartbeat hb = new Heartbeat(server.TCP_IP, server.TCP_PORT, 1, 0, true); //TODO: preencher com informação correta
                 out.writeObject(hb);
                 out.flush();
                 DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);

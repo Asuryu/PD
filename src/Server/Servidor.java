@@ -21,6 +21,7 @@ public class Servidor {
     public Connection dbConn; // Connection to the database
 
     public ServerSocket s; // Socket to receive TCP connections
+    public String TCP_IP; // Port to receive TCP connections
     public int TCP_PORT; // Port to receive TCP connections
 
     public DatagramSocket ds; // Socket to receive UDP packets
@@ -43,6 +44,7 @@ public class Servidor {
         this.JDBC_STRING = "jdbc:sqlite:" + DATABASES_PATH + DATABASE_NAME;
 
         s = new ServerSocket(0);
+        TCP_IP = s.getInetAddress().getHostAddress();
         TCP_PORT = s.getLocalPort();
 
         // Começar à escuta por heartbeats (30 segundos)
