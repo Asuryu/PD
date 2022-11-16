@@ -75,7 +75,7 @@ public class Servidor {
             ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(s.getInputStream());
             FileOutputStream fos = new FileOutputStream(DATABASES_PATH + DATABASE_NAME);
-            out.writeObject(TCPMessages.GET_DATABASE); // Envia a mensagem ao servidor a pedir a base de dados
+            out.writeObject("GET_DATABASE"); // Envia a mensagem ao servidor a pedir a base de dados
             out.flush();
             // Receber ficheiro aos poucos
             byte[] msgByte = new byte[4000];
