@@ -1,5 +1,6 @@
 package Server.Threads;
 
+import Client.Cliente;
 import Server.Comparators.HeartbeatComparatorLoad;
 import Server.Heartbeat;
 import Server.Servidor;
@@ -10,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 
 /**
