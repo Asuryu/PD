@@ -1,5 +1,6 @@
 package Server;
 
+import Client.Cliente;
 import Server.Comparators.HeartbeatComparatorLoad;
 import Server.Threads.*;
 
@@ -8,6 +9,9 @@ import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -19,7 +23,7 @@ public class Servidor {
     public final String DATABASE_NAME; // Name of the database file
     public final String JDBC_STRING; // JDBC string to connect to the database
     public Connection dbConn; // Connection to the database
-
+    public int dbVersion; // Version of the database
     public ServerSocket s; // Socket to receive TCP connections
     public String TCP_IP; // Port to receive TCP connections
     public int TCP_PORT; // Port to receive TCP connections
@@ -37,12 +41,15 @@ public class Servidor {
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public final ArrayList<Heartbeat> onlineServers = new ArrayList<>(); // List of online servers
 
+    public final ArrayList<Socket> activeConnections = new ArrayList<>(); // List of active connections
+
     public Servidor(int UDP_PORT, String DATABASES_PATH) throws Exception {
         this.UDP_PORT = UDP_PORT;
         this.DATABASES_PATH = DATABASES_PATH;
         this.DATABASE_NAME = "PD-2022-23-TP-" + UDP_PORT + ".db";
         this.JDBC_STRING = "jdbc:sqlite:" + DATABASES_PATH + DATABASE_NAME;
 
+        mostraASCII();
         s = new ServerSocket(0);
         TCP_IP = s.getInetAddress().getHostAddress();
         TCP_PORT = s.getLocalPort();
@@ -70,7 +77,7 @@ public class Servidor {
             ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(s.getInputStream());
             FileOutputStream fos = new FileOutputStream(DATABASES_PATH + DATABASE_NAME);
-            out.writeObject(TCPMessages.GET_DATABASE); // Envia a mensagem ao servidor a pedir a base de dados
+            out.writeObject("GET_DATABASE"); // Envia a mensagem ao servidor a pedir a base de dados
             out.flush();
             // Receber ficheiro aos poucos
             byte[] msgByte = new byte[4000];
@@ -81,7 +88,6 @@ public class Servidor {
             fos.close();
             s.close();
         }
-
 
         ThreadTCP tcp = new ThreadTCP(this);
         ThreadAtendeClientes tac = new ThreadAtendeClientes(this);
@@ -104,6 +110,15 @@ public class Servidor {
         s.close();
         ds.close();
         ms.close();
+    }
+
+    private void mostraASCII(){
+        System.out.println("██████╗  ██████╗ ██╗      ██████╗ ██████╗");
+        System.out.println("██╔══██╗██╔═══██╗██║      ██╔══██╗██╔══██╗");
+        System.out.println("██████╔╝██║   ██║██║█████╗██████╔╝██║  ██║");
+        System.out.println("██╔══██╗██║   ██║██║╚════╝██╔═══╝ ██║  ██║");
+        System.out.println("██████╔╝╚██████╔╝███████╗ ██║     ██████╔╝");
+        System.out.println("╚═════╝  ╚═════╝ ╚══════╝ ╚═╝     ╚═════╝ \n");
     }
 
     public static void main(String[] args) {

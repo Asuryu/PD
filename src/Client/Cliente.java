@@ -1,13 +1,6 @@
 package Client;
 
-import Server.Heartbeat;
-
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Scanner;
 
 /**
  * Representa um cliente do sistema
@@ -15,6 +8,7 @@ import java.util.Scanner;
  */
 public class Cliente {
     public static void main(String[] args) throws Exception {
+
         if(args.length!=2){
             System.out.println("ERRO");
         }
@@ -27,6 +21,5 @@ public class Cliente {
         String live = "I m live";
         DatagramPacket datagramPacket = new DatagramPacket(live.getBytes(), live.length());
         datagramSocket.send(datagramPacket);
-
     }
 }

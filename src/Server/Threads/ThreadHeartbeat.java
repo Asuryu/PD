@@ -5,6 +5,10 @@ import Server.Servidor;
 
 import java.io.*;
 import java.net.*;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -16,7 +20,6 @@ import java.util.Collections;
 public class ThreadHeartbeat extends Thread {
 
     protected final Servidor server;
-
     ReceiveHeartbeats rhb;
     RemoveDeadServers rds;
 
@@ -26,6 +29,7 @@ public class ThreadHeartbeat extends Thread {
 
     @Override
     public void run(){
+
         try {
             server.ms.setSoTimeout(0);
             server.ms.joinGroup(server.sa, server.ni);
@@ -47,7 +51,9 @@ public class ThreadHeartbeat extends Thread {
                 Thread.sleep(10000); // Enviar heartbeat de 10 em 10 segundos
                 ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(bOut);
-                Heartbeat hb = new Heartbeat(server.TCP_IP, server.TCP_PORT, 1, 0, true); //TODO: preencher com informação correta
+                server.dbVersion = getDbVersion();
+                // System.out.println("Database version: " + server.dbVersion);
+                Heartbeat hb = new Heartbeat(server.TCP_IP, server.TCP_PORT, server.dbVersion, server.activeConnections.size(), true); //TODO: preencher com informação correta
                 out.writeObject(hb);
                 out.flush();
                 DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
@@ -61,6 +67,21 @@ public class ThreadHeartbeat extends Thread {
         } catch (Exception e) {
             System.out.println("[ ! ] An error has occurred while sending heartbeat");
             System.out.println("      " + e.getMessage());
+        }
+    }
+
+    private int getDbVersion(){
+        try {
+            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+            Statement stmt = server.dbConn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT version FROM database WHERE id=1");
+            rs.next();
+            server.dbVersion = rs.getInt("version");
+            rs.close();
+            stmt.close();
+            return server.dbVersion;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
