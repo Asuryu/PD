@@ -17,7 +17,7 @@ public class Cliente {
         String ipServer = "localhost";
         int port = 5004;
         ds.connect(InetAddress.getByName(ipServer), port);
-        DatagramPacket dp = new DatagramPacket(new byte[4096], 4096);
+        DatagramPacket dp = new DatagramPacket(new byte[1], 1);
         ds.send(dp);
 
         DatagramPacket dpReceive = new DatagramPacket(new byte[4096], 4096);
@@ -26,6 +26,9 @@ public class Cliente {
         ArrayList<Heartbeat> availableServers = (ArrayList<Heartbeat>) in.readObject();
         for (Heartbeat heartbeat : availableServers) {
             System.out.println(heartbeat);
+        }
+
+        while(true){
         }
     }
 }
