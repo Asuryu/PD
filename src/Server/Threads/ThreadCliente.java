@@ -1,10 +1,7 @@
 package Server.Threads;
 
 import Server.Servidor;
-import Server.TCPMessages;
-
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 
@@ -21,16 +18,24 @@ public class ThreadCliente extends Thread{
         try{
             ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(client.getInputStream());
-            TCPMessages request = (TCPMessages)in.readObject(); // Obtém a mensagem do cliente
-            System.out.println(request);
-            switch (request) {
-                case GET_DATABASE -> getDatabase();
-                case LOGIN -> {
-                    out.writeObject("Dá-me as tuas credenciais");
-                    HashMap<String, String> recv = (HashMap<String, String>) in.readObject();
-                    System.out.println(recv);
-                }
-                //case ... -> func();
+            String request = (String)in.readObject();
+            String[] arrayRequest = request.split(" ");
+            switch (arrayRequest[0].toUpperCase()) {
+                case "GET_DATABASE" -> getDatabase();
+                case "REGISTER" -> {}
+                case "LOGIN" -> {}
+                case "EDIT_PROFILE" -> {}
+                case "AWAITING_PAYMENT_CONFIRMATION" -> {}
+                case "PAYMENT_CONFIRMED" -> {}
+                case "SHOWS_LIST_SEARCH" -> {}
+                case "SELECT_SHOW" -> {}
+                case "AVAILABLE_SEATS_AND_PRICE" -> {}
+                case "SELECT_SEATS" -> {}
+                case "VALIDATE_RESERVATION" -> {}
+                case "REMOVE_RESERVATION" -> {}
+            }
+            synchronized (server.activeConnections) {
+                server.activeConnections.remove(client);
             }
             client.close();
         }catch (IOException | ClassNotFoundException e){
