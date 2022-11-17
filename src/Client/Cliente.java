@@ -28,8 +28,14 @@ public class Cliente {
         DatagramSocket datagramSocket = new DatagramSocket();
         datagramSocket.connect(InetAddress.getByName(port), ip);
 
-        String live = "I m live";
+        String live = "REGISTER";
         DatagramPacket datagramPacket = new DatagramPacket(live.getBytes(), live.length());
         datagramSocket.send(datagramPacket);
+
+        Socket sv = new Socket("127.0.0.1", 61906);
+        ObjectOutputStream out = new ObjectOutputStream(sv.getOutputStream());
+        ObjectInputStream in = new ObjectInputStream(sv.getInputStream());
+        out.writeObject("REGISTER");
+        out.flush();
     }
 }
