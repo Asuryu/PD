@@ -2,8 +2,16 @@ package Client;
 
 
 
+import Server.Heartbeat;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -20,11 +28,21 @@ public class Cliente {
         int ip = Integer.parseInt(args[1]);
 
         DatagramSocket datagramSocket = new DatagramSocket();
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bOut);
+
         datagramSocket.connect(InetAddress.getByName(port), ip);
 
         String live = "I m live";
         DatagramPacket datagramPacket = new DatagramPacket(live.getBytes(), live.length());
         datagramSocket.send(datagramPacket);
+
+        // Recebe a lista de servidores disponíveis
+        DatagramPacket dp = new DatagramPacket(new byte[4096], 4096);
+        datagramSocket.receive(dp);
+        ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(dp.getData(), 0, dp.getLength()));
+        ArrayList<Heartbeat> servers = (ArrayList<Heartbeat>)in.readObject();
+        System.out.println(Arrays.toString(servers.toArray()));
 
 
         /*int flagCloseCmd=0;
