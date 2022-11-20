@@ -1,6 +1,5 @@
 package Server.Threads;
 
-import Client.Cliente;
 import Server.Comparators.HeartbeatComparatorLoad;
 import Server.Heartbeat;
 import Server.Servidor;
@@ -11,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 
 /**
@@ -43,18 +41,20 @@ public class ThreadAtendeClientes extends Thread {
                 //System.out.println("[ * ] Received packet from " + dp.getAddress().getHostAddress() + ":" + dp.getPort());
 
                 // Cria array availableServers apenas com os servidores disponíveis e ordenados por carga
-                ArrayList<Heartbeat> availableServers = new ArrayList<>(server.onlineServers);
-                availableServers.removeIf(hb -> !hb.isAvailable());
-                availableServers.sort(new HeartbeatComparatorLoad()); // Ordena os servidores por carga
+                synchronized (server.onlineServers){
+                    ArrayList<Heartbeat> availableServers = new ArrayList<>(server.onlineServers);
+                    availableServers.removeIf(hb -> !hb.isAvailable());
+                    availableServers.sort(new HeartbeatComparatorLoad()); // Ordena os servidores por carga
 
-                ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-                ObjectOutputStream out = new ObjectOutputStream(bOut);
-                out.writeObject(availableServers);
-                out.flush();
+                    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+                    ObjectOutputStream out = new ObjectOutputStream(bOut);
+                    out.writeObject(availableServers);
+                    out.flush();
 
-                DatagramPacket dpSend = new DatagramPacket(bOut.toByteArray(), bOut.size(), dp.getAddress(), dp.getPort());
-                server.ds.send(dpSend);
-                System.out.println("[ * ] Sent list of servers to client " + dp.getAddress().getHostAddress() + ":" + dp.getPort());
+                    DatagramPacket dpSend = new DatagramPacket(bOut.toByteArray(), bOut.size(), dp.getAddress(), dp.getPort());
+                    server.ds.send(dpSend);
+                    System.out.println("[ * ] Sent list of servers to client " + dp.getAddress().getHostAddress() + ":" + dp.getPort());
+                }
             }
         } catch (IOException e) {
             System.out.println("[ ! ] An error has occurred while receiving a packet");
