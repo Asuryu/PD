@@ -50,11 +50,11 @@ public class ThreadCliente extends Thread{
         // Enviar ficheiro aos poucos
         int n;
         byte[] fileRead = new byte[4000];
-        do {
-            n = fis.read(fileRead);
-            if (n == -1) break;
-            client.getOutputStream().write(fileRead);
-        } while (true);
+        while ((n = fis.read(fileRead)) != -1) {
+            client.getOutputStream().write(fileRead, 0, n);
+            //System.out.println("Sent " + n + " bytes");
+        }
+        client.getOutputStream().flush();
         System.out.println("[ * ] Sent database to server " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
     }
 }
