@@ -123,6 +123,19 @@ public class Servidor {
         }
     }
 
+    public synchronized void sendOnlineServers() throws IOException {
+
+        for(Socket s : activeConnections){
+            ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+            out.writeObject("ONLINE_SERVERS");
+            synchronized (onlineServers) {
+                onlineServers.sort(new HeartbeatComparatorLoad());
+                out.writeObject(onlineServers);
+            }
+            out.flush();
+        }
+    }
+
     private void mostraASCII(){
         System.out.println("██████╗  ██████╗ ██╗      ██████╗ ██████╗");
         System.out.println("██╔══██╗██╔═══██╗██║      ██╔══██╗██╔══██╗");
