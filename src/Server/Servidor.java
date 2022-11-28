@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,7 @@ public class Servidor {
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public final ArrayList<Heartbeat> onlineServers = new ArrayList<>(); // List of online servers
     public final ArrayList<Socket> activeConnections = new ArrayList<>(); // List of active connections
+    public final HashMap<Integer, ArrayList<String>> dbVersions = new HashMap<>(); // Map of database versions
 
     public Servidor(int UDP_PORT, String DATABASES_PATH) throws Exception {
         this.UDP_PORT = UDP_PORT;
@@ -143,6 +145,9 @@ public class Servidor {
         System.out.println("██╔══██╗██║   ██║██║╚════╝██╔═══╝ ██║  ██║");
         System.out.println("██████╔╝╚██████╔╝███████╗ ██║     ██████╔╝");
         System.out.println("╚═════╝  ╚═════╝ ╚══════╝ ╚═╝     ╚═════╝ \n");
+    }
+
+    public synchronized void incDbVersion(){
     }
 
     public static void main(String[] args) {

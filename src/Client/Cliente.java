@@ -33,7 +33,7 @@ public class Cliente {
 
         datagramSocket.connect(InetAddress.getByName(port), ip);
 
-        String live = "I m live";
+        String live = "REGISTER";
         DatagramPacket datagramPacket = new DatagramPacket(live.getBytes(), live.length());
         datagramSocket.send(datagramPacket);
 
@@ -100,7 +100,5 @@ public class Cliente {
                 }
             }
         }while(flagCloseCmd==0);*/
-
-
     }
 }
