@@ -1,17 +1,11 @@
 package Server;
 
-import Client.Cliente;
 import Server.Comparators.HeartbeatComparatorLoad;
 import Server.Threads.*;
 
 import java.io.*;
 import java.net.*;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -26,6 +20,7 @@ public class Servidor {
     public Connection dbConn; // Connection to the database
     public int dbVersion; // Version of the database
     public ServerSocket s; // Socket to receive TCP connections
+    public String TCP_IP; // Port to receive TCP connections
     public int TCP_PORT; // Port to receive TCP connections
 
     public DatagramSocket ds; // Socket to receive UDP packets
@@ -38,9 +33,9 @@ public class Servidor {
     public SocketAddress sa; // Socket address
     public NetworkInterface ni; // Network interface
 
+    public Boolean isAvailable = true; // Flag to indicate if the server is available to receive connections
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public final ArrayList<Heartbeat> onlineServers = new ArrayList<>(); // List of online servers
-
     public final ArrayList<Socket> activeConnections = new ArrayList<>(); // List of active connections
     public final HashMap<Integer, ArrayList<String>> dbVersions = new HashMap<>(); // Map of database versions
 
@@ -52,6 +47,7 @@ public class Servidor {
 
         mostraASCII();
         s = new ServerSocket(0);
+        TCP_IP = s.getInetAddress().getHostAddress();
         TCP_PORT = s.getLocalPort();
 
         // Começar à escuta por heartbeats (30 segundos)
@@ -64,29 +60,36 @@ public class Servidor {
         e existirem servidores com uma cópia, pede uma cópia ao que tiver
         a base de dados com a versão mais atualizada e com menor carga */
         File copy = new File(DATABASES_PATH + DATABASE_NAME);
-        if(!copy.exists() && !onlineServers.isEmpty()){
+        if(!onlineServers.isEmpty()){
             // Get the server with the highest database version and the loweast load
             Heartbeat hb = onlineServers.stream()
                     .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
                     .lastEntry().getValue().stream()
                     .min(new HeartbeatComparatorLoad()).get();
 
-            onlineServers.removeIf(h -> h.getDbVersion() < 1); // TODO: (<1) Remove servers with no database
+            // Removes servers with a lower database version
+            onlineServers.removeIf(h -> h.getDbVersion() <= 1);
 
-            Socket s = new Socket("localhost", hb.getPort());
-            ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(s.getInputStream());
-            FileOutputStream fos = new FileOutputStream(DATABASES_PATH + DATABASE_NAME);
-            out.writeObject("GET_DATABASE"); // Envia a mensagem ao servidor a pedir a base de dados
-            out.flush();
-            // Receber ficheiro aos poucos
-            byte[] msgByte = new byte[4000];
-            while(s.getInputStream().read(msgByte) != -1){
-                fos.write(msgByte);
+            // Establishes a connection to the server with the highest database version and the loweast load
+            // and requests a copy of the database
+            if(!copy.exists() && !onlineServers.isEmpty()){
+                Socket s = new Socket("localhost", hb.getPort());
+                ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+                ObjectInputStream in = new ObjectInputStream(s.getInputStream());
+                FileOutputStream fos = new FileOutputStream(DATABASES_PATH + DATABASE_NAME);
+                out.writeObject("GET_DATABASE"); // Envia a mensagem ao servidor a pedir a base de dados
+                out.flush();
+                // Receber ficheiro aos poucos
+                byte[] msgByte = new byte[4000];
+                while(s.getInputStream().read(msgByte) != -1){
+                    fos.write(msgByte);
+                }
+                System.out.println("[ · ] Received database from server " + s.getInetAddress().getHostAddress() + ":" + hb.getPort());
+                fos.close();
+                out.close();
+                in.close();
+                s.close();
             }
-            System.out.println("[ · ] Received database from server " + s.getInetAddress().getHostAddress() + ":" + hb.getPort());
-            fos.close();
-            s.close();
         }
 
         ThreadTCP tcp = new ThreadTCP(this);
@@ -102,14 +105,37 @@ public class Servidor {
             thrd.join();
         }
 
-//        Thread.sleep(500);
-//        ThreadConsolaAdmin console = new ThreadConsolaAdmin(this);
-//        threads.add(console);
-//        console.start();
-
         s.close();
         ds.close();
         ms.close();
+    }
+
+    public synchronized int getDbVersion(){
+        try {
+            dbConn = DriverManager.getConnection(JDBC_STRING);
+            Statement stmt = dbConn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT version FROM database WHERE id=1");
+            rs.next();
+            dbVersion = rs.getInt("version");
+            rs.close();
+            stmt.close();
+            return dbVersion;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public synchronized void sendOnlineServers() throws IOException {
+
+        for(Socket s : activeConnections){
+            ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+            out.writeObject("ONLINE_SERVERS");
+            synchronized (onlineServers) {
+                onlineServers.sort(new HeartbeatComparatorLoad());
+                out.writeObject(onlineServers);
+            }
+            out.flush();
+        }
     }
 
     private void mostraASCII(){
