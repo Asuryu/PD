@@ -12,6 +12,10 @@ import java.util.HashMap;
 public class ThreadCliente extends Thread{
     protected final Servidor server;
     private final Socket client;
+
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
+
     public ThreadCliente(Servidor server, Socket client) {
         this.server = server;
         this.client = client;
@@ -20,8 +24,8 @@ public class ThreadCliente extends Thread{
     @Override
     public void run(){
         try{
-            ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(client.getInputStream());
+            out = new ObjectOutputStream(client.getOutputStream());
+            in = new ObjectInputStream(client.getInputStream());
             String request = (String)in.readObject();
             String[] arrayRequest = request.split(" ");
             switch (arrayRequest[0].toUpperCase()) {
@@ -99,15 +103,15 @@ public class ThreadCliente extends Thread{
             ResultSet rs = stmt.executeQuery("SELECT username FROM utilizador");
             rs.next();
             if(username.equals("admin") && password.equals("admin")){
-                client.getOutputStream().write("ADMIN_LOGIN_SUCCESSFUL".getBytes());
+                out.writeObject("ADMIN_LOGIN_SUCCESSFUL");
             }else{
                 if(rs.getString("username").equals(username)) {
                     rs = stmt.executeQuery("SELECT password FROM utilizador");
                     if(rs.getString("password").equals(password)) {
-                        client.getOutputStream().write("LOGIN_SUCCESSFUL".getBytes());
+                        out.writeObject("LOGIN_SUCCESSFUL");
                     }
                 }else{
-                    client.getOutputStream().write("LOGIN_FAILED".getBytes());
+                    out.writeObject("LOGIN_FAILED");
                 }
             }
             rs.close();
@@ -141,14 +145,12 @@ public class ThreadCliente extends Thread{
             rs.next();
             stmt.executeUpdate("INSERT INTO utilizador (nome, username, password) VALUES ('" + nome + "', '" + username + "', '" + password + "')");
             System.out.println("[ * ] User registered");
-            client.getOutputStream().write("REGISTER_SUCCESSFUL".getBytes());
-            client.getOutputStream().flush();
-            rs.close();
-            stmt.close();
+            out.writeObject("REGISTER_SUCCESSFUL");
+            out.flush();
         } catch (SQLException e) {
             System.out.println("[ * ] Username already exists");
-            client.getOutputStream().write("USER_ALREADY_EXISTS".getBytes());
-            client.getOutputStream().flush();
+            out.writeObject("REGISTER_FAILED");
+            out.flush();
             //throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);

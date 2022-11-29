@@ -26,7 +26,7 @@ public class Servidor {
     public DatagramSocket ds; // Socket to receive UDP packets
     public final int UDP_PORT; // Port to receive UDP packets
 
-    public final String MULTICAST_IP = "239.39.39.39"; // Multicast IP address (string)
+    public final String MULTICAST_IP = "239.20.19.109"; // Multicast IP address (string)
     public final int MULTICAST_PORT = 4004; // Multicast port
     public InetAddress ipGroup; // Multicast IP address
     public MulticastSocket ms; // Multicast socket
