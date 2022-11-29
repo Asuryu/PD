@@ -7,7 +7,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class ThreadCliente extends Thread{
     protected final Servidor server;
@@ -35,10 +35,10 @@ public class ThreadCliente extends Thread{
                 case "EDIT_PROFILE" -> edit_profile(arrayRequest[1], arrayRequest[2], arrayRequest[3]);
                 case "AWAITING_PAYMENT_CONFIRMATION" -> listPayments("AWAITING_PAYMENT_CONFIRMATION");
                 case "PAYMENT_CONFIRMED" -> listPayments("PAYMENT_CONFIRMED");
-                case "SHOWS_LIST_SEARCH" -> shows_list_search();
+                case "SHOWS_LIST_SEARCH" -> shows_list_search(arrayRequest[1]);
                 case "SELECT_SHOW" -> select_show();
-                case "AVAILABLE_SEATS_AND_PRICE" -> available_seats_and_price();
-                case "SELECT_SEATS" -> select_seats();
+                case "AVAILABLE_SEATS_AND_PRICE" -> available_seats_and_price(Integer.parseInt(arrayRequest[1]));
+                case "SELECT_SEATS" -> select_seats(arrayRequest[1]);
                 case "VALIDATE_RESERVATION" -> validate_reservation();
                 case "REMOVE_RESERVATION" -> remove_reservation();
             }
@@ -58,20 +58,93 @@ public class ThreadCliente extends Thread{
     private void validate_reservation() {
     }
 
-    private void select_seats() {
+    private void select_seats(String seatsWanted) {
+        // Select seats
+        // Send confirmation
+        try {
+            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+            Statement stmt = server.dbConn.createStatement();
+            String[] seats = seatsWanted.split(",");
+            // TODO: Finish later, need to think how to indeed "select" the seats
+            // Is it already associated with a reservation? No?
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void available_seats_and_price() {
+    private void available_seats_and_price(int showID) throws IOException {
+        // Available seats and price for the selected show
+        try {
+            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+            Statement stmt = server.dbConn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM lugar WHERE espetaculo_id = " + showID);
+            ArrayList<String> seats = new ArrayList<>();
+            while (rs.next()) {
+                seats.add(rs.getString("fila") + " " + rs.getString("assento") + " " + rs.getString("preco"));
+            }
+            client.getOutputStream().write(seats.toString().getBytes());
+        } catch (SQLException | IOException e) {
+            client.getOutputStream().write("ERROR_OCCURED".getBytes());
+        }
     }
 
-    private void select_show() {
+    private void select_show() throws IOException {
+        // Select a show with at least 24 hours before the show starts
+        try{
+            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+            Statement stmt = server.dbConn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM espetaculos WHERE data > NOW() + INTERVAL 24 HOUR");
+            ArrayList<String> shows = new ArrayList<>();
+            while (rs.next()) {
+                shows.add(rs.getString("id") + " " + rs.getString("name") + " " + rs.getString("date") + " " + rs.getString("price"));
+            }
+            client.getOutputStream().write(shows.toString().getBytes());
+        } catch (SQLException | IOException throwables) {
+            client.getOutputStream().write("ERROR_OCCURED".getBytes());
+        }
     }
 
-    private void shows_list_search() {
+    private void shows_list_search(String filter) {
+        // Consult and search in the database for shows
+        // Send the list of shows to the client
+        try{
+            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+            Statement stmt = server.dbConn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM espetaculo");
+            ArrayList<String> shows = new ArrayList<>();
+            while(rs.next()){
+                shows.add(rs.getString("name"));
+            }
+            client.getOutputStream().write(shows.toString().getBytes());
+        } catch (SQLException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void listPayments(String whatToList) {
-        
+    private void listPayments(String whatToList) throws IOException {
+        try{
+            // TODO: Check later how the user is being confirmed
+            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+            Statement stmt = server.dbConn.createStatement();
+            ArrayList<String> payments = new ArrayList<>();
+            if(whatToList.equals("AWAITING_PAYMENT_CONFIRMATION")){
+                ResultSet rs = stmt.executeQuery("SELECT * FROM payments WHERE pago = 0");
+                while(rs.next()){
+                    String payment = rs.getString("payment_id") + " " + rs.getString("payment_amount") + " " + rs.getString("payment_date") + " " + rs.getString("payment_confirmed");
+                    payments.add(payment);
+                    client.getOutputStream().write(payment.getBytes());
+                }
+            }else if(whatToList.equals("PAYMENT_CONFIRMED")){
+                ResultSet rs = stmt.executeQuery("SELECT * FROM payments WHERE pago = 1");
+                while(rs.next()){
+                    String payment = rs.getString("payment_id") + " " + rs.getString("payment_amount") + " " + rs.getString("payment_date") + " " + rs.getString("payment_confirmed");
+                    payments.add(payment);
+                    client.getOutputStream().write(payment.getBytes());
+                }
+            }
+        }catch (IOException | SQLException e) {
+            client.getOutputStream().write("ERROR_OCCURED".getBytes());
+        }
     }
 
     private void edit_profile(String name, String username, String password) {

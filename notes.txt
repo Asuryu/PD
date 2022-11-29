@@ -9,24 +9,24 @@ Edit Profile output Server-Client:
     - UPDATE_SUCCESSFUL || Edit profile successful
     - USER_NOT_FOUND || User not found
     - ERROR_OCCURED || Error occured, for more information check server output
-List Payments output Server-Client:
-    -
-    -
-    -
+List Payments [Awaiting payment / Payment confirmed] output Server-Client:
+    [!] Receive ArrayList<String> payments = new ArrayList<>();
+    - If payments.size() == 0, then no payments found
+    - ERROR_OCCURED
 Show List Search output Server-Client:
     -
     -
     -
 Select Show output Server-Client:
-    -
-    -
-    -
+    [!] Receive ArrayList<String> shows = new ArrayList<>();
+    - If shows.size() == 0, then no shows found
+    - ERROR_OCCURED
 Available Seats and Price output Server-Client:
-    -
-    -
-    -
+    [!] Receive ArrayList<String> seats = new ArrayList<>();
+    - If seats.size() == 0, then no seats found
+    - ERROR_OCCURED
 Select Seat output Server-Client:
-    -
+    [!] Receive String with seats wanted separated by comma (,)
     -
     -
 Validate Reservation output Server-Client:
