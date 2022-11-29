@@ -32,7 +32,7 @@ public class ThreadCliente extends Thread{
                 case "GET_DATABASE" -> getDatabase();
                 case "REGISTER" -> register(arrayRequest[1], arrayRequest[2], arrayRequest[3]);
                 case "LOGIN" -> login(arrayRequest[1], arrayRequest[2]);
-                case "EDIT_PROFILE" -> edit_profile();
+                case "EDIT_PROFILE" -> edit_profile(arrayRequest[1], arrayRequest[2], arrayRequest[3]);
                 case "AWAITING_PAYMENT_CONFIRMATION" -> listPayments("AWAITING_PAYMENT_CONFIRMATION");
                 case "PAYMENT_CONFIRMED" -> listPayments("PAYMENT_CONFIRMED");
                 case "SHOWS_LIST_SEARCH" -> shows_list_search();
@@ -71,10 +71,29 @@ public class ThreadCliente extends Thread{
     }
 
     private void listPayments(String whatToList) {
+        
     }
 
-    private void edit_profile() {
-
+    private void edit_profile(String name, String username, String password) {
+        try{
+            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+            Statement stmt = server.dbConn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE username='"+username+"'");
+            try{
+                if(rs.next()){
+                    stmt.executeUpdate(String.format("UPDATE users SET name='%s', username = '%s', password='%s' WHERE username='%s'", name, username, password, username));
+                    client.getOutputStream().write("UPDATE_SUCCESSFUL".getBytes());
+                }else{
+                    client.getOutputStream().write("USER_NOT_FOUND".getBytes());
+                }
+            }catch (IOException | SQLException e){
+                client.getOutputStream().write("ERROR_OCCURED".getBytes());
+                System.out.println("[ ! ] An error has occurred while editing profile");
+                System.out.println("      " + e.getMessage());
+            }
+        } catch (SQLException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void login(String username, String password) {
@@ -98,9 +117,7 @@ public class ThreadCliente extends Thread{
             rs.close();
             stmt.close();
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (SQLException | IOException e) {
             throw new RuntimeException(e);
         }
     }
