@@ -1,5 +1,6 @@
 package Server.Threads;
 
+import Server.Comparators.HeartbeatComparatorDBVersion;
 import Server.Comparators.HeartbeatComparatorLoad;
 import Server.Heartbeat;
 import Server.Servidor;

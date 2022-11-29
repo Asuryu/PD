@@ -29,11 +29,13 @@ public class ThreadTCP extends Thread {
                   }
                   ThreadCliente threadCliente = new ThreadCliente(server, client);
                   threadCliente.start();
+
+                  server.sendOnlineServers(); // Send list of online servers to the all clients
+
               }
          } catch (Exception e) {
               System.out.println("[ ! ] An error has occurred while receiving a TCP connection");
               System.out.println("      " + e.getMessage());
          }
    }
-
 }

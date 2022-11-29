@@ -95,7 +95,10 @@ public class ThreadHeartbeat extends Thread {
 
                     Heartbeat hb = (Heartbeat) in.readObject(); // Obtém o heartbeat do servidor
                     synchronized (server.onlineServers) {
-                        if(!server.onlineServers.contains(hb)) server.onlineServers.add(hb); // Adiciona o servidor à lista de servidores online
+                        if(!server.onlineServers.contains(hb)){
+                            server.onlineServers.add(hb); // Adiciona o servidor à lista de servidores online
+                            server.sendOnlineServers(); // Send list of online servers to the all clients
+                        }
                         else {
                             int index = server.onlineServers.indexOf(hb);
                             server.onlineServers.set(index, hb);
@@ -104,16 +107,26 @@ public class ThreadHeartbeat extends Thread {
                     }
 
                     boolean isUpToDate = true;
-                    for(Heartbeat h : server.onlineServers){
-                        if(h.getDbVersion() > server.dbVersion) isUpToDate = false;
-                    }
+//                    for(Heartbeat h : server.onlineServers){
+//                        if(h.getDbVersion() > server.dbVersion) isUpToDate = false;
+//                    }
                     if (!isUpToDate) {
                         System.out.println("[ ! ] Database is not up to date, updating...");
                         // Server becomes unavailable
                         server.isAvailable = false;
 
                         // Server sends list of available servers to clients
-                        // TODO
+                        for(Socket s : server.activeConnections){
+                            try {
+                                ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+                                oos.writeObject(server.onlineServers);
+                                oos.flush();
+                                System.out.println("sent list of available servers to client");
+                            } catch (IOException e) {
+                                System.out.println("[ ! ] An error has occurred while sending list of available servers to client");
+                                System.out.println("      " + e.getMessage());
+                            }
+                        }
 
                         // Server closes all connections
                         synchronized (server.activeConnections) {
@@ -130,33 +143,37 @@ public class ThreadHeartbeat extends Thread {
                         DatagramPacket datagramPacket = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
                         server.ms.send(datagramPacket);
 
-                        synchronized (server.onlineServers){
-                            // Get the server with the highest database version and the loweast load
-                            Heartbeat hb1 = server.onlineServers.stream()
-                                    .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
-                                    .lastEntry().getValue().stream()
-                                    .min(new HeartbeatComparatorLoad()).get();
-
-                            Socket s = new Socket("localhost", hb1.getPort());
-                            ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-                            File file = new File("database.db"); // TODO
-                            FileOutputStream fos = new FileOutputStream(file);
-
-                            // Server sends request to server with the highest database version and lowest load
-                            oos.writeObject("GET_DATABASE");
-                            oos.flush();
-
-                            byte[] msgByte = new byte[4000];
-                            while(s.getInputStream().read(msgByte) != -1){
-                                System.out.println("Receiving database..." + msgByte.length);
-                                fos.write(msgByte);
-                            }
-                            fos.close();
-                            s.close();
-
-                            server.dbVersion = hb1.getDbVersion();
-                            server.isAvailable = true;
-                        }
+                        // FIXME: pedir ao servidor a base de dados atualizada
+//                        synchronized (server.onlineServers){
+//                            // Get the server with the highest database version and the loweast load
+//                            Heartbeat hb1 = server.onlineServers.stream()
+//                                    .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
+//                                    .lastEntry().getValue().stream()
+//                                    .min(new HeartbeatComparatorLoad()).get();
+//
+//                            Socket s = new Socket("localhost", hb1.getPort());
+//                            ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+//                            File file = new File("database.db");
+//                            FileOutputStream fos = new FileOutputStream(file);
+//
+//                            // Server sends request to server with the highest database version and lowest load
+//                            oos.writeObject("GET_DATABASE");
+//                            oos.flush();
+//
+//                            byte[] msgByte = new byte[4000];
+//
+//                            int bytesRead;
+//                            while ((bytesRead = s.getInputStream().read(msgByte)) != -1) {
+//                                fos.write(msgByte, 0, bytesRead);
+//                                fos.flush();
+//                                System.out.println(bytesRead);
+//                            }
+//                            fos.close();
+//                            s.close();
+//
+//                            server.dbVersion = hb1.getDbVersion();
+//                            server.isAvailable = true;
+//                        }
                     }
                 } catch(SocketTimeoutException e) {
                     // System.out.println("[ ! ] Timeout reached");
