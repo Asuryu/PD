@@ -52,7 +52,6 @@ public class ThreadHeartbeat extends Thread {
 
         try{
             while(!isInterrupted()) {
-                Thread.sleep(10000); // Enviar heartbeat de 10 em 10 segundos
                 ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(bOut);
                 server.dbVersion = server.getDbVersion();
@@ -63,6 +62,7 @@ public class ThreadHeartbeat extends Thread {
                 DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
                 server.ms.send(dp);
                 //System.out.println("[ · ] Sending heartbeat to " + server.MULTICAST_IP + ":" + server.MULTICAST_PORT);
+                Thread.sleep(10000); // Enviar heartbeat de 10 em 10 segundos
             }
         } catch (InterruptedException ie){
             System.out.println("[ - ] Exiting thread ThreadHeartbeat");
@@ -198,12 +198,12 @@ public class ThreadHeartbeat extends Thread {
         public void run() {
             try{
                 while(!isInterrupted()){
-                    Thread.sleep(500); // Verificar se algum servidor já não está online a cada 500ms
                     Instant now = Instant.now();
                     synchronized (server.onlineServers){
                         // Remove os servidores que já não estão online ou que não enviam heartbeats há mais de 35 segundos
                         server.onlineServers.removeIf(hb -> Duration.between(hb.getSentTimestamp(), now).toSeconds() > 35 || !hb.isAvailable());
                     }
+                    Thread.sleep(500); // Verificar se algum servidor já não está online a cada 500ms
                 }
             } catch (InterruptedException ignored){
             } catch (Exception e){
