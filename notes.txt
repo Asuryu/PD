@@ -1,0 +1,39 @@
+Register output Server-Client:
+    - REGISTER_SUCCESSFUL
+    - USER_ALREADY_EXISTS
+Login output Server-Client:
+    - ADMIN_LOGIN_SUCCESSFUL || Admin login successful
+    - LOGIN_SUCCESSFUL || User login successful
+    - LOGIN_FAILED || User login failed
+Edit Profile output Server-Client:
+    - UPDATE_SUCCESSFUL || Edit profile successful
+    - USER_NOT_FOUND || User not found
+    - ERROR_OCCURED || Error occured, for more information check server output
+List Payments output Server-Client:
+    -
+    -
+    -
+Show List Search output Server-Client:
+    -
+    -
+    -
+Select Show output Server-Client:
+    -
+    -
+    -
+Available Seats and Price output Server-Client:
+    -
+    -
+    -
+Select Seat output Server-Client:
+    -
+    -
+    -
+Validate Reservation output Server-Client:
+    -
+    -
+    -
+Remove Reservation output Server-Client:
+    -
+    -
+    -

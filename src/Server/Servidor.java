@@ -37,7 +37,7 @@ public class Servidor {
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public final ArrayList<Heartbeat> onlineServers = new ArrayList<>(); // List of online servers
     public final ArrayList<Socket> activeConnections = new ArrayList<>(); // List of active connections
-    public final HashMap<Integer, ArrayList<String>> dbVersions = new HashMap<>(); // Map of database versions
+    public final HashMap<Integer, String> dbVersions = new HashMap<>(); // Map of database versions
 
     public Servidor(int UDP_PORT, String DATABASES_PATH) throws Exception {
         this.UDP_PORT = UDP_PORT;
@@ -147,7 +147,8 @@ public class Servidor {
         System.out.println("╚═════╝  ╚═════╝ ╚══════╝ ╚═╝     ╚═════╝ \n");
     }
 
-    public synchronized void incDbVersion(){
+    public synchronized void incDbVersion(String query){
+        dbVersions.put(getDbVersion()+1, query);
     }
 
     public static void main(String[] args) {

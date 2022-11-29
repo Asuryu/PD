@@ -28,7 +28,7 @@ public class ThreadCliente extends Thread{
                 case "GET_DATABASE" -> getDatabase();
                 case "REGISTER" -> register(arrayRequest[1], arrayRequest[2], arrayRequest[3]);
                 case "LOGIN" -> login(arrayRequest[1], arrayRequest[2]);
-                case "EDIT_PROFILE" -> edit_profile();
+                case "EDIT_PROFILE" -> edit_profile(arrayRequest[1], arrayRequest[2], arrayRequest[3]);
                 case "AWAITING_PAYMENT_CONFIRMATION" -> listPayments("AWAITING_PAYMENT_CONFIRMATION");
                 case "PAYMENT_CONFIRMED" -> listPayments("PAYMENT_CONFIRMED");
                 case "SHOWS_LIST_SEARCH" -> shows_list_search();
@@ -67,10 +67,29 @@ public class ThreadCliente extends Thread{
     }
 
     private void listPayments(String whatToList) {
+        
     }
 
-    private void edit_profile() {
-
+    private void edit_profile(String name, String username, String password) {
+        try{
+            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+            Statement stmt = server.dbConn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE username='"+username+"'");
+            try{
+                if(rs.next()){
+                    stmt.executeUpdate(String.format("UPDATE users SET name='%s', username = '%s', password='%s' WHERE username='%s'", name, username, password, username));
+                    client.getOutputStream().write("UPDATE_SUCCESSFUL".getBytes());
+                }else{
+                    client.getOutputStream().write("USER_NOT_FOUND".getBytes());
+                }
+            }catch (IOException | SQLException e){
+                client.getOutputStream().write("ERROR_OCCURED".getBytes());
+                System.out.println("[ ! ] An error has occurred while editing profile");
+                System.out.println("      " + e.getMessage());
+            }
+        } catch (SQLException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void login(String username, String password) {
@@ -94,9 +113,7 @@ public class ThreadCliente extends Thread{
             rs.close();
             stmt.close();
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (SQLException | IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -116,21 +133,24 @@ public class ThreadCliente extends Thread{
         System.out.println("[ * ] Sent database to server " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
     }
 
-    private void register(String nome, String username, String password) throws SQLException {
+    private void register(String nome, String username, String password) throws SQLException, IOException {
         try {
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT username FROM utilizador");
             rs.next();
-            if(rs.getString("username").equals(username)) {
-                System.out.println("[ * ] Username already exists");
-            }else{
-                stmt.executeUpdate("INSERT INTO utilizador (nome, username, password) VALUES ('" + nome + "', '" + username + "', '" + password + "')");
-                System.out.println("[ * ] User registered");
-            }
+            stmt.executeUpdate("INSERT INTO utilizador (nome, username, password) VALUES ('" + nome + "', '" + username + "', '" + password + "')");
+            System.out.println("[ * ] User registered");
+            client.getOutputStream().write("REGISTER_SUCCESSFUL".getBytes());
+            client.getOutputStream().flush();
             rs.close();
             stmt.close();
         } catch (SQLException e) {
+            System.out.println("[ * ] Username already exists");
+            client.getOutputStream().write("USER_ALREADY_EXISTS".getBytes());
+            client.getOutputStream().flush();
+            //throw new RuntimeException(e);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
