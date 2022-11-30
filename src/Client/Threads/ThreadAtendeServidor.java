@@ -3,6 +3,7 @@ package Client.Threads;
 import Client.Cliente;
 import Server.Comparators.HeartbeatComparatorLoad;
 import Server.Heartbeat;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class ThreadAtendeServidor extends Thread {
             objectOutputStream = new ObjectOutputStream(c.socket.getOutputStream());
             objectInputStream = new ObjectInputStream(c.socket.getInputStream());
             ArrayList<String> payements = new ArrayList<>();
+            ArrayList<String> payementsP = new ArrayList<>();
             String request = (String) objectInputStream.readObject();
             String[] arrayRequest = request.split(" ");
             switch (arrayRequest[0].toUpperCase()) {
@@ -37,6 +39,8 @@ public class ThreadAtendeServidor extends Thread {
                 case "USER_NOT_FOUND" -> userNotFound();
                 case "ERROR_OCCURED" -> erro();
                 case "AWAITING_PAYEMENT"-> awaitingPayementList(payements);
+                case "PAYEMENT_CONFIRMED"-> payementConfirmedList(payementsP);
+
 
             }
         } catch (Exception e) {
@@ -94,6 +98,10 @@ public class ThreadAtendeServidor extends Thread {
             if (!c.wasEdit)
                 c.wasEdit = false;
         }
+        synchronized (c.progress) {
+            if (!c.progress)
+                c.progress = false;
+        }
 
     }
     private void awaitingPayementList(ArrayList p){
@@ -108,5 +116,16 @@ public class ThreadAtendeServidor extends Thread {
                 System.out.println(p.get(i));
         }
     }
-
+    private void payementConfirmedList(ArrayList p){
+        if(p.size()==0) {
+            System.out.println("Nao tem historico de pagamentos");
+            synchronized (c.progress) {
+                if (c.progress == false)
+                    c.progress = true;
+            }
+        }else if(p.size()>=1){
+            for(int i = 0; i < p.size();i++)
+                System.out.println(p.get(i));
+        }
+    }
 }

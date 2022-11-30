@@ -77,6 +77,10 @@ public class ThreadEnviaServidor extends Thread {
                                 case 3:
                                     objectOutputStream.writeObject("PAYMENT_CONFIRMED");
                                     objectOutputStream.flush();
+                                    synchronized (c.progress) {
+                                        if (!c.progress)
+                                            break;
+                                    }
                                     break;
                                 case 4:
                                     String searchAndConsult[] = {"SHOWS_LIST_SEARCH"};
