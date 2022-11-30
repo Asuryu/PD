@@ -8,6 +8,7 @@ import Server.Heartbeat;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,5 +83,7 @@ public class Cliente {
     }
 
     }
+
+
 }
 
