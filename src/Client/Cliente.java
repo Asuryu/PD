@@ -5,23 +5,27 @@ import Client.Threads.ThreadEnviaServidor;
 import Server.Heartbeat;
 
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class Cliente {
+    public DatagramSocket datagramSocket; // Socket to receive UDP packets
+    public Boolean isLogged; // Flag to indicate if the client is logged or not
+    public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
+    public ArrayList<Heartbeat>servers = new ArrayList<Heartbeat>();
     public int port;
     public String ip;
-    public DatagramSocket datagramSocket; // Socket to receive UDP packets
-    public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public final Socket socket;
 
     public Cliente(String ip, int port) throws Exception {
         this.port = port;
         this.ip = ip;
         socket = new Socket();
-        ArrayList<Heartbeat> servers = null;
+        isLogged = false;
         while (true) {
             try {
                 datagramSocket = new DatagramSocket();
@@ -37,6 +41,7 @@ public class Cliente {
                 ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(dp.getData(), 0, dp.getLength()));
                 servers = (ArrayList<Heartbeat>) in.readObject();
                 System.out.println(Arrays.toString(servers.toArray()));
+
               /* for (Heartbeat heartbeat : servers) {
                     try {
                         // Socket socket = new Socket("localhost",heartbeat.getPort());
@@ -57,7 +62,7 @@ public class Cliente {
                     }
                 }*/
 
-            } catch (IOException e) {
+            } catch (Error e) {
                 //Caso ocorra erro a ligar ao servidor ele cancela
                 System.out.println("Erro ao conecetar a um servidor");
                 break;
@@ -80,6 +85,20 @@ public class Cliente {
 
     }
 
+    public static void main(String[] args) throws Exception {
+        System.out.println("A comecar o cliente....");
+        if (args.length != 2) {
+            System.err.println("[ERROR]Sintaxe: <lb address> <lb port>");
+            return;
+        }
+        try{
+            new Cliente(args[0],Integer.parseInt(args[1]));
+        }catch (Exception e) {
+            System.out.println("[ ! ] An error has occurred while setting up the client");
+            System.out.println("      " + e.getMessage());
+            e.printStackTrace();
+        }
 
+    }
 }
 

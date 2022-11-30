@@ -25,6 +25,7 @@ public class ThreadAtendeServidor extends Thread{
                 switch (arrayRequest[0].toUpperCase()) {
                     case "REGISTER_SUCCESSFUL"-> register();
                     case "USER_ALREADY_EXISTS" ->registerFailed();
+                    case "ADMIN_LOGIN_SUCCESSFUL"->sucessLogin();
                 }
     }catch(Exception e){
                 e.printStackTrace();
@@ -32,8 +33,13 @@ public class ThreadAtendeServidor extends Thread{
     }
     private void register(){
         System.out.println("Foi registado com sucesso");
+        synchronized (c.isLogged)
+        {c.isLogged=true;}
     }
     private void registerFailed(){
+        System.out.println("O USER já existe");
+    }
+    private void sucessLogin(){
         System.out.println("O USER já existe");
     }
 }
