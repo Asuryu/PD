@@ -44,7 +44,8 @@ public class ThreadEnviaServidor extends Thread {
                         objectOutputStream.writeObject(log);
                         objectOutputStream.flush();
                         synchronized (c.isLogged) {
-                            if (!c.isLogged) break;
+                            if (!c.isLogged)
+                                break;
                         }
                         do {
                             int opt2 = textUserInterface.logedMenu();
@@ -60,10 +61,18 @@ public class ThreadEnviaServidor extends Thread {
                                     editProfileName[2] = scanner.nextLine();
                                     objectOutputStream.writeObject(editProfileName);
                                     objectOutputStream.flush();
+                                    synchronized (c.wasEdit) {
+                                        if (!c.wasEdit)
+                                            break;
+                                    }
                                     break;
                                 case 2:
                                     objectOutputStream.writeObject("AWAITING_PAYMENT_CONFIRMATION");
                                     objectOutputStream.flush();
+                                    synchronized (c.progress) {
+                                        if (!c.progress)
+                                            break;
+                                    }
                                     break;
                                 case 3:
                                     objectOutputStream.writeObject("PAYMENT_CONFIRMED");
@@ -133,9 +142,13 @@ public class ThreadEnviaServidor extends Thread {
                         reg[3] = scanner.nextLine();
                         objectOutputStream.writeObject(reg);
                         objectOutputStream.flush();
+                        synchronized (c.isReg) {
+                            if (!c.isReg)
+                                break;
+                        }
                         break;
                     case 3:
-                        System.out.println("Saindo do sistema: ");
+                        System.out.println("Saindo do sistema;");
                         return;
                 }
             } catch (Exception e) {
