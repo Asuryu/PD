@@ -8,8 +8,10 @@ public class TextUserInterface {
 
     private Scanner sc;
     public Cliente c;
+    private boolean exit;
     public TextUserInterface(){
         sc = new Scanner(System.in);
+        exit = false;
     }
 
 
@@ -40,7 +42,7 @@ public class TextUserInterface {
         do {
             System.out.print("Escolha uma opcao: ");
             option = sc.nextInt();
-        } while(option < 1 || option > 9);
+        } while(option < 1 || option > 10);
         return option;
     }
     public int mainMenu() {//menu de login
@@ -51,7 +53,7 @@ public class TextUserInterface {
         do {
             System.out.print("Escolha uma opcao: ");
             option = sc.nextInt();
-        } while(option < 1 || option > 3);
+        } while(option < 1 || option > 4);
         return option;
     }
 }
