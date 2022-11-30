@@ -33,6 +33,8 @@ public class ThreadAtendeServidor extends Thread{
     }
     private void register(){
         System.out.println("Foi registado com sucesso");
+        synchronized (c.isLogged)
+        {c.isLogged=true;}
     }
     private void registerFailed(){
         System.out.println("O USER já existe");
