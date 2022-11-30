@@ -30,7 +30,6 @@ public class ThreadEnviaServidor extends Thread {
                 Socket socket = new Socket("10.65.132.193",heartbeat.getPort());
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-                //  String log [] = {"REGISTER","tania","tania","123"};
                 int opt = textUserInterface.mainMenu();
                 switch (opt){
                     case 1:
@@ -42,6 +41,81 @@ public class ThreadEnviaServidor extends Thread {
                         log[2] = scanner.nextLine();
                         objectOutputStream.writeObject(log);
                         objectOutputStream.flush();
+                       do{
+                           int opt2 = textUserInterface.logedMenu();
+                           switch (opt2){
+                            case 1:
+                                System.out.println("Vai editar dados do seu prefil");
+                                String editProfileName[] = {"EDIT_PROFILE"};
+                                System.out.println("Mome: ");
+                                editProfileName[1] = scanner.nextLine();
+                                System.out.println("Username: ");
+                                editProfileName[1] = scanner.nextLine();
+                                System.out.println("Password: ");
+                                editProfileName[2] = scanner.nextLine();
+                                objectOutputStream.writeObject(editProfileName);
+                                objectOutputStream.flush();
+                                break;
+                            case 2:
+                                objectOutputStream.writeObject("AWAITING_PAYMENT_CONFIRMATION");
+                                objectOutputStream.flush();
+                                break;
+                            case 3:
+                                objectOutputStream.writeObject("PAYMENT_CONFIRMED");
+                                objectOutputStream.flush();
+                                break;
+                            case 4:
+                                String searchAndConsult[] = {"SHOWS_LIST_SEARCH"};
+                                int opts[] = textUserInterface.searchAndConsultMenu();
+                                int l = opts.length;
+                                int i=0;
+                                int ii =1;
+                                do{
+                                    switch (opts[i]){
+                                        case 1:
+                                            searchAndConsult[ii] = "nome";
+                                            break;
+                                        case 2:
+                                            searchAndConsult[ii] = "localidade";
+                                            break;
+                                        case 3:
+                                            searchAndConsult[ii] = "genero";
+                                            break;
+                                        case 4:
+                                            searchAndConsult[ii] = "data";
+                                            break;
+                                    }
+                                        i++;
+                                        ii++;
+                                }while(i != l);
+                                objectOutputStream.writeObject(searchAndConsult);
+                                objectOutputStream.flush();
+                                break;
+                            case 5:
+                                objectOutputStream.writeObject("SELECT_SHOW");
+                                objectOutputStream.flush();
+                                break;
+                            case 6:
+                                String seatsAndPrices[] = {"AVAILABLE_SEATS_AND_PRICE"};
+                                objectOutputStream.writeObject(seatsAndPrices);
+                                objectOutputStream.flush();
+                                   break;
+                           case 7:
+                               String selectSeats[] = {"SELECT_SEATS"};
+                               objectOutputStream.writeObject(selectSeats);
+                               objectOutputStream.flush();
+                                   break;
+                           case 8:
+                               objectOutputStream.writeObject("VALIDATE_RESERVATION");
+                               objectOutputStream.flush();
+                                   break;
+                           case 9:
+                               objectOutputStream.writeObject("REMOVE_RESERVATION");
+                               objectOutputStream.flush();
+                                   break;
+
+                        }
+                       }while(opt!=9);
                         break;
                     case 2:
                         System.out.println("Vai efetuar o registo");
