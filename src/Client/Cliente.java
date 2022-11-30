@@ -5,10 +5,7 @@ import Client.Threads.ThreadEnviaServidor;
 import Server.Heartbeat;
 
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,10 +57,9 @@ public class Cliente {
                     }
                 }*/
 
-            } catch (Error e) {
+            } catch (IOException e) {
                 //Caso ocorra erro a ligar ao servidor ele cancela
                 System.out.println("Erro ao conecetar a um servidor");
-                e.printStackTrace();
                 break;
             }
 
