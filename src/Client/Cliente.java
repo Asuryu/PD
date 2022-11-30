@@ -16,7 +16,7 @@ public class Cliente {
     public DatagramSocket datagramSocket; // Socket to receive UDP packets
     public Boolean isLogged; // Flag to indicate if the client is logged or not
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
-    public ArrayList<Heartbeat>servers = new ArrayList<Heartbeat>();
+    public ArrayList<Heartbeat> servers = new ArrayList<Heartbeat>();
     public int port;
     public String ip;
     public final Socket socket;
@@ -81,7 +81,7 @@ public class Cliente {
                 t.join();
             }
 
-    }
+        }
 
     }
 
@@ -91,9 +91,9 @@ public class Cliente {
             System.err.println("[ERROR]Sintaxe: <lb address> <lb port>");
             return;
         }
-        try{
-            new Cliente(args[0],Integer.parseInt(args[1]));
-        }catch (Exception e) {
+        try {
+            new Cliente(args[0], Integer.parseInt(args[1]));
+        } catch (Exception e) {
             System.out.println("[ ! ] An error has occurred while setting up the client");
             System.out.println("      " + e.getMessage());
             e.printStackTrace();

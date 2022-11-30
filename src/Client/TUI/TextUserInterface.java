@@ -9,15 +9,16 @@ public class TextUserInterface {
     private Scanner sc;
     public Cliente c;
     private boolean exit;
-    public TextUserInterface(){
+
+    public TextUserInterface() {
         sc = new Scanner(System.in);
         exit = false;
     }
 
 
-    public int[] searchAndConsultMenu(){
+    public int[] searchAndConsultMenu() {
         int options[] = new int[4];
-        int i=0;
+        int i = 0;
         System.out.println("Pesquisar espetaculos por: ");
         System.out.println("1-Nome");
         System.out.println("2-Localidade");
@@ -28,7 +29,8 @@ public class TextUserInterface {
         i++;
         return options;
     }
-    public int logedMenu(){
+
+    public int logedMenu() {
         int option;
         System.out.println("1 - Editar dados dos prefil");
         System.out.println("2 - Consultar reservas ainda não pagas");
@@ -42,9 +44,10 @@ public class TextUserInterface {
         do {
             System.out.print("Escolha uma opcao: ");
             option = sc.nextInt();
-        } while(option < 1 || option > 10);
+        } while (option < 1 || option > 10);
         return option;
     }
+
     public int mainMenu() {//menu de login
         int option;
         System.out.println("1 - Login");
@@ -53,7 +56,7 @@ public class TextUserInterface {
         do {
             System.out.print("Escolha uma opcao: ");
             option = sc.nextInt();
-        } while(option < 1 || option > 4);
+        } while (option < 1 || option > 4);
         return option;
     }
 }
