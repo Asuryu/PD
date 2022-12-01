@@ -38,7 +38,7 @@ public class ThreadCliente extends Thread{
                 case "EDIT_PROFILE" -> edit_profile(arrayRequest[1], arrayRequest[2], arrayRequest[3]);
                 case "AWAITING_PAYMENT_CONFIRMATION" -> listPayments("AWAITING_PAYMENT_CONFIRMATION");
                 case "PAYMENT_CONFIRMED" -> listPayments("PAYMENT_CONFIRMED");
-                case "SHOWS_LIST_SEARCH" -> shows_list_search(arrayRequest[1]);
+                case "SHOWS_LIST_SEARCH" -> {}//shows_list_search(arrayRequest[1]);
                 case "SELECT_SHOW" -> select_show();
                 case "AVAILABLE_SEATS_AND_PRICE" -> available_seats_and_price(Integer.parseInt(arrayRequest[1]));
                 case "SELECT_SEATS" -> select_seats(arrayRequest[1]);
@@ -57,14 +57,19 @@ public class ThreadCliente extends Thread{
         try{
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
-            if(stmt.executeUpdate("DELETE FROM reserva WHERE id=" + reservationID) == 1){
+            String format = "DELETE FROM reserva WHERE id=" + reservationID;
+            String format2 = "DELETE FROM reserva_lugar WHERE id_reserva=" + reservationID;
+            if(stmt.executeUpdate(format) == 1){
                 client.getOutputStream().write("RESERVA_SUCCESSFULLY_REMOVED".getBytes());
                 client.getOutputStream().flush();
+                server.incDbVersion(format);
             }
-            if(stmt.executeUpdate("DELETE FROM reserva_lugar WHERE id_reserva=" + reservationID) == 1){
+            if(stmt.executeUpdate(format2) == 1){
                 client.getOutputStream().write("RESERVA_LUGAR_SUCCESSFULLY_REMOVED".getBytes());
                 client.getOutputStream().flush();
+                server.incDbVersion(format2);
             }
+
         }catch (SQLException e){
             client.getOutputStream().write("ERROR_OCCURED".getBytes());
             client.getOutputStream().flush();
@@ -82,6 +87,7 @@ public class ThreadCliente extends Thread{
             String[] seats = seatsWanted.split(",");
             String format = "INSERT INTO reserva (data_hora, pago, id_utilizador, id_espetaculo) VALUES (NOW(), 0, clientID, showID)";
             stmt.executeUpdate(format);
+            server.incDbVersion(format);
             ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
             rs.next();
             reservationID = rs.getInt(1);
@@ -94,6 +100,7 @@ public class ThreadCliente extends Thread{
                 }else {
                     client.getOutputStream().write("SEAT_RESERVATION_SUCCESSFUL".getBytes());
                     client.getOutputStream().flush();
+                    server.incDbVersion(format2);
                 }
             }
         } catch (SQLException e) {
