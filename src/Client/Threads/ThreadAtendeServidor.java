@@ -26,8 +26,8 @@ public class ThreadAtendeServidor extends Thread {
         try {
             objectOutputStream = new ObjectOutputStream(c.socket.getOutputStream());
             objectInputStream = new ObjectInputStream(c.socket.getInputStream());
-            ArrayList<String> payements = new ArrayList<>();
-            ArrayList<String> payementsP = new ArrayList<>();
+            ArrayList<String> p = (ArrayList<String>)objectInputStream.readObject();
+            ArrayList<String> pP = (ArrayList<String>)objectInputStream.readObject();
             HashMap<String, String> filters = new HashMap<>();
             String request = (String) objectInputStream.readObject();
             String[] arrayRequest = request.split(" ");
@@ -42,8 +42,9 @@ public class ThreadAtendeServidor extends Thread {
                 case "USER_NOT_FOUND" -> userNotFound();
                 case "ERROR_OCCURED" -> erro();
 
-                case "AWAITING_PAYEMENT" -> awaitingPayementList(payements);
-                case "PAYEMENT_CONFIRMED" -> payementConfirmedList(payementsP);
+                case "AWAITING_PAYEMENT" -> awaitingPayementList(p);
+                case "PAYEMENT_CONFIRMED" -> payementConfirmedList(pP);
+
                 case "SHOWS_LIST_SEARCH" -> showListSearch();
                 case "SELECT_SHOW" -> seeInfoAboutShow();
                 case "AVAILABLE_SEATS_AND_PRICE" -> availableSeatsAndPrice();
@@ -64,35 +65,30 @@ public class ThreadAtendeServidor extends Thread {
             c.isReg = true;
         }
     }
-
     private void registerFailed() {
         System.out.println("O utilizador insirido já existe");
         synchronized (c.isReg) {
             c.isReg = false;
         }
     }
-
     private void sucessAdminLogin() {
         System.out.println("Login do administrador com sucesso");
         synchronized (c.isLogged) {
             c.isLogged = true;
         }
     }
-
     private void sucessLogin() {
         System.out.println("Login do utilizador com sucesso");
         synchronized (c.isLogged) {
             c.isLogged = true;
         }
     }
-
     private void loginFailed() {
         System.out.println("Login falhou");
         synchronized (c.isLogged) {
             c.isLogged = false;
         }
     }
-
 
     private void wasEditSucess() {
         System.out.println("Os seus dados foram editados com sucesso");
@@ -101,7 +97,6 @@ public class ThreadAtendeServidor extends Thread {
                 c.wasEdit = true;
         }
     }
-
     private void userNotFound() {
         System.out.println("O utilizador nao foi encontrado na base de dados");
         synchronized (c.wasEdit) {
@@ -109,7 +104,6 @@ public class ThreadAtendeServidor extends Thread {
                 c.wasEdit = false;
         }
     }
-
     private void erro() {
         System.out.println("Ocorreu um erro");
         synchronized (c.wasEdit) {
@@ -123,30 +117,29 @@ public class ThreadAtendeServidor extends Thread {
 
     }
 
-
-    private void awaitingPayementList(ArrayList p) {
-        if (p.size() == 0) {
+    private void awaitingPayementList(ArrayList<String> payements) {
+        if (payements.size() == 0) {
             System.out.println("Nao tem pagamentos para efetuar");
-            synchronized (c.progress) {
-                if (c.progress == false)
-                    c.progress = true;
-            }
-        } else if (p.size() >= 1) {
-            for (int i = 0; i < p.size(); i++)
-                System.out.println(p.get(i));
+        } else if (payements.size() >= 1) {
+            for (int i = 0; i < payements.size(); i++)
+                System.out.println(payements.get(i));
+        }
+        synchronized (c.progress) {
+            if (!c.progress)
+                c.progress = true;
         }
     }
-
-    private void payementConfirmedList(ArrayList p) {
-        if (p.size() == 0) {
+    private void payementConfirmedList(ArrayList<String> pp) {
+        if (pp.size() == 0) {
             System.out.println("Nao tem historico de pagamentos");
-            synchronized (c.progress) {
-                if (c.progress == false)
-                    c.progress = true;
-            }
-        } else if (p.size() >= 1) {
-            for (int i = 0; i < p.size(); i++)
-                System.out.println(p.get(i));
+
+        } else if (pp.size() >= 1) {
+            for (int i = 0; i < pp.size(); i++)
+                System.out.println(pp.get(i));
+        }
+        synchronized (c.progress) {
+            if (!c.progress)
+                c.progress = true;
         }
     }
 
