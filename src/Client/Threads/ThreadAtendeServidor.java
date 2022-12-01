@@ -1,37 +1,34 @@
 package Client.Threads;
 
 import Client.Cliente;
-import Server.Comparators.HeartbeatComparatorLoad;
-import Server.Heartbeat;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
+import java.net.DatagramSocket;
+import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 
 public class ThreadAtendeServidor extends Thread {
-    private Cliente c;
-    private ObjectOutputStream objectOutputStream;
+    private final Cliente c;
+    private final Socket s;
     private ObjectInputStream objectInputStream;
 
-
-    public ThreadAtendeServidor(Cliente c) {
+    public ThreadAtendeServidor(Cliente c, Socket s) {
         this.c = c;
+        this.s = s;
     }
 
     @Override
     public void run() {
         try {
-            objectOutputStream = new ObjectOutputStream(c.socket.getOutputStream());
+          //  c.datagramSocket = new DatagramSocket(c.port);
             objectInputStream = new ObjectInputStream(c.socket.getInputStream());
-            ArrayList<String> p = (ArrayList<String>)objectInputStream.readObject();
-            ArrayList<String> pP = (ArrayList<String>)objectInputStream.readObject();
-            ArrayList<String> cS = (ArrayList<String>)objectInputStream.readObject();
-            ArrayList<String> sS = (ArrayList<String>)objectInputStream.readObject();
-            ArrayList<String> sp = (ArrayList<String>)objectInputStream.readObject();
-            Integer seatsNumber[] = (Integer[]) objectInputStream.readObject();
+            ArrayList<String> p = (ArrayList<String>) objectInputStream.readObject();
+            ArrayList<String> pP = (ArrayList<String>) objectInputStream.readObject();
+            ArrayList<String> cS = (ArrayList<String>) objectInputStream.readObject();
+            ArrayList<String> sS = (ArrayList<String>) objectInputStream.readObject();
+            ArrayList<String> sp = (ArrayList<String>) objectInputStream.readObject();
             HashMap<String, String> filters = new HashMap<>();
             String request = (String) objectInputStream.readObject();
             String[] arrayRequest = request.split(" ");

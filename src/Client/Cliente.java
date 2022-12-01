@@ -21,9 +21,10 @@ public class Cliente {
     public Boolean isAdmin;
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public ArrayList<Heartbeat> servers = new ArrayList<>();
-    public int port;
-    public String ip;
+    public final int port;
+    public final String ip;
     public final Socket socket;
+    public final ArrayList<Socket> activeConnections = new ArrayList<>(); // List of active connections
 
     public Cliente(String ip, int port) throws Exception {
         this.port = port;
@@ -38,7 +39,9 @@ public class Cliente {
             try {
                 datagramSocket = new DatagramSocket();
                 datagramSocket.connect(InetAddress.getByName(ip), port);
+
                 String live = "I'M ALIVE";
+
                 DatagramPacket datagramPacket = new DatagramPacket(live.getBytes(), live.length());
                 //send packet
                 datagramSocket.send(datagramPacket);
@@ -58,9 +61,9 @@ public class Cliente {
             }
 
             ThreadEnviaServidor threadEnviaServidor = new ThreadEnviaServidor(this, servers);
-            ThreadAtendeServidor threadAtendeServidor = new ThreadAtendeServidor(this);
+           // ThreadAtendeServidor threadAtendeServidor = new ThreadAtendeServidor(this,socket);
 
-            threads.add(threadAtendeServidor);
+           // threads.add(threadAtendeServidor);
             threads.add(threadEnviaServidor);
             for (Thread t : threads) {
                 t.start();
@@ -80,6 +83,7 @@ public class Cliente {
             System.err.println("[ERROR]Sintaxe: <lb address> <lb port>");
             return;
         }
+
         try {
             new Cliente(args[0], Integer.parseInt(args[1]));
         } catch (Exception e) {
