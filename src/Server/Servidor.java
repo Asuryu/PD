@@ -5,10 +5,11 @@ import Server.Threads.*;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Servidor {
@@ -37,7 +38,7 @@ public class Servidor {
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public final ArrayList<Heartbeat> onlineServers = new ArrayList<>(); // List of online servers
     public final ArrayList<Socket> activeConnections = new ArrayList<>(); // List of active connections
-    public final HashMap<Integer, String> dbVersions = new HashMap<>(); // Map of database versions
+    public HashMap<Integer, String> dbVersions = new HashMap<>(); // Map of database versions
 
     public Servidor(int UDP_PORT, String DATABASES_PATH) throws Exception {
         this.UDP_PORT = UDP_PORT;
@@ -53,44 +54,85 @@ public class Servidor {
         // Começar à escuta por heartbeats (30 segundos)
         ThreadInicialHeartbeat tihb = new ThreadInicialHeartbeat(this);
         tihb.start();
-        tihb.join(30000);
+        tihb.join(2000);
         ms.leaveGroup(sa, ni);
 
         /* Se o servidor não tiver uma cópia local da base de dados
         e existirem servidores com uma cópia, pede uma cópia ao que tiver
         a base de dados com a versão mais atualizada e com menor carga */
-        File copy = new File(DATABASES_PATH + DATABASE_NAME);
-        if(!onlineServers.isEmpty()){
-            // Get the server with the highest database version and the loweast load
-            Heartbeat hb = onlineServers.stream()
-                    .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
-                    .lastEntry().getValue().stream()
-                    .min(new HeartbeatComparatorLoad()).get();
 
-            // Removes servers with a lower database version
-            onlineServers.removeIf(h -> h.getDbVersion() <= 1);
+        Heartbeat hb = onlineServers.stream()
+                .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
+                .lastEntry().getValue().stream()
+                .min(new HeartbeatComparatorLoad()).get();
 
-            // Establishes a connection to the server with the highest database version and the loweast load
-            // and requests a copy of the database
-            if(!copy.exists() && !onlineServers.isEmpty()){
-                Socket s = new Socket("localhost", hb.getPort());
-                ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(s.getInputStream());
-                FileOutputStream fos = new FileOutputStream(DATABASES_PATH + DATABASE_NAME);
-                out.writeObject("GET_DATABASE"); // Envia a mensagem ao servidor a pedir a base de dados
-                out.flush();
-                // Receber ficheiro aos poucos
-                byte[] msgByte = new byte[4000];
-                while(s.getInputStream().read(msgByte) != -1){
-                    fos.write(msgByte);
-                }
-                System.out.println("[ · ] Received database from server " + s.getInetAddress().getHostAddress() + ":" + hb.getPort());
-                fos.close();
-                out.close();
-                in.close();
-                s.close();
+        if (!Files.exists(Path.of(DATABASES_PATH + DATABASE_NAME))) { // Não existe uma cópia local da base de dados
+            Files.copy(Path.of(DATABASE_ORIGINAL), Path.of(DATABASES_PATH + DATABASE_NAME));
+            if (onlineServers.size() > 0) {
+                // Pedir cópia da base de dados ao servidor com a versão mais atualizada e com menor carga
+                Socket s = new Socket(hb.getIp(), hb.getPort());
+                ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+                oos.writeObject("GET_DATABASE");
+                oos.flush();
+
+                // Receber cópia da base de dados
+                ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+                HashMap<Integer, String> dbVersions = (HashMap<Integer, String>) ois.readObject();
+                System.out.println(dbVersions);
+                updateDatabase(dbVersions);
+            }
+        } else { // Existe uma cópia local da base de dados
+            System.out.println("Existe uma cópia local da base de dados");
+            // Verificar se a base de dados está atualizada
+            System.out.println(hb.getDbVersion());
+            System.out.println(getDbVersion());
+            if(hb.getDbVersion() > getDbVersion()) {
+                // Pedir cópia da base de dados ao servidor com a versão mais atualizada e com menor carga
+                Socket s = new Socket(hb.getIp(), hb.getPort());
+                ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+                oos.writeObject("GET_DATABASE");
+                oos.flush();
+
+                // Receber cópia da base de dados
+                ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+                HashMap<Integer, String> dbVersions = (HashMap<Integer, String>) ois.readObject();
+                System.out.println(dbVersions);
+                updateDatabase(dbVersions);
             }
         }
+
+//        File copy = new File(DATABASES_PATH + DATABASE_NAME);
+//        if(!onlineServers.isEmpty()){
+//            // Get the server with the highest database version and the loweast load
+//            Heartbeat hb = onlineServers.stream()
+//                    .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
+//                    .lastEntry().getValue().stream()
+//                    .min(new HeartbeatComparatorLoad()).get();
+//
+//            // Removes servers with a lower database version
+//            onlineServers.removeIf(h -> h.getDbVersion() <= 1);
+//
+//            // Establishes a connection to the server with the highest database version and the loweast load
+//            // and requests a copy of the database
+//            if(!copy.exists() && !onlineServers.isEmpty()){
+//                System.out.println("[ * ] Requesting a copy of the database from " + hb.getIp() + ":" + hb.getPort());
+//                Socket s = new Socket("localhost", hb.getPort());
+//                ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+//                ObjectInputStream in = new ObjectInputStream(s.getInputStream());
+//                out.writeObject("GET_DATABASE"); // Envia a mensagem ao servidor a pedir a base de dados
+//                out.flush();
+//                HashMap<Integer, String> dbVersions = (HashMap<Integer, String>) in.readObject(); // Recebe a lista de versões da base de dados
+//                synchronized (this.dbVersions){
+//                    this.dbVersions.putAll(dbVersions);
+//                }
+//                System.out.println("[ · ] Received database from server " + s.getInetAddress().getHostAddress() + ":" + hb.getPort());
+//                out.close();
+//                in.close();
+//                s.close();
+//            }
+//        }
+//
+//        updateDatabase(dbVersions);
 
         ThreadTCP tcp = new ThreadTCP(this);
         ThreadAtendeClientes tac = new ThreadAtendeClientes(this);
@@ -149,6 +191,34 @@ public class Servidor {
 
     public synchronized void incDbVersion(String query){
         dbVersions.put(getDbVersion()+1, query);
+        // write in the database
+        try {
+            dbConn = DriverManager.getConnection(JDBC_STRING);
+            Statement stmt = dbConn.createStatement();
+            stmt.executeUpdate("UPDATE database SET version=" + (getDbVersion()+1) + " WHERE id=1");
+            stmt.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("[ · ] Database version incremented to " + (getDbVersion()));
+    }
+
+    public synchronized void updateDatabase(HashMap<Integer, String> dbVersions) throws SQLException {
+        if(dbVersions.isEmpty()) return;
+
+        System.out.println("[ · ] Updating database...");
+        this.dbVersions.putAll(dbVersions);
+        dbConn = DriverManager.getConnection(JDBC_STRING);
+        Statement stmt = dbConn.createStatement();
+        for (Map.Entry<Integer, String> entry : dbVersions.entrySet()) {
+            stmt.executeUpdate(entry.getValue());
+        }
+        int lastKey = 0;
+        for (Integer key : dbVersions.keySet()) {
+            lastKey = key;
+        }
+        stmt.executeUpdate("UPDATE database SET version=" + lastKey + " WHERE id=1");
+        stmt.close();
     }
 
     public static void main(String[] args) {

@@ -28,7 +28,7 @@ public class ThreadInicialHeartbeat extends Thread {
     public void run(){
         try {
             server.ms = new MulticastSocket(server.MULTICAST_PORT);
-            server.ms.setSoTimeout(30000);
+            server.ms.setSoTimeout(2000);
             server.ipGroup = InetAddress.getByName(server.MULTICAST_IP);
             server.sa = new InetSocketAddress(server.ipGroup, server.MULTICAST_PORT);
             server.ni = NetworkInterface.getByName("en0");

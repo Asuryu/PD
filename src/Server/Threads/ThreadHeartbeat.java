@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -62,7 +63,7 @@ public class ThreadHeartbeat extends Thread {
                 DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
                 server.ms.send(dp);
                 //System.out.println("[ · ] Sending heartbeat to " + server.MULTICAST_IP + ":" + server.MULTICAST_PORT);
-                Thread.sleep(10000); // Enviar heartbeat de 10 em 10 segundos
+                Thread.sleep(100); // Enviar heartbeat de 10 em 10 segundos
             }
         } catch (InterruptedException ie){
             System.out.println("[ - ] Exiting thread ThreadHeartbeat");
@@ -71,6 +72,7 @@ public class ThreadHeartbeat extends Thread {
         } catch (Exception e) {
             System.out.println("[ ! ] An error has occurred while sending heartbeat");
             System.out.println("      " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -97,19 +99,22 @@ public class ThreadHeartbeat extends Thread {
                     synchronized (server.onlineServers) {
                         if(!server.onlineServers.contains(hb)){
                             server.onlineServers.add(hb); // Adiciona o servidor à lista de servidores online
-                            server.sendOnlineServers(); // Send list of online servers to the all clients
                         }
                         else {
                             int index = server.onlineServers.indexOf(hb);
                             server.onlineServers.set(index, hb);
                         }
-                        Collections.sort(server.onlineServers); // Ordena a lista de servidores online por carga
+                        // Ordena a lista de servidores online por carga
+                        server.onlineServers.sort(new HeartbeatComparatorLoad());
                     }
 
                     boolean isUpToDate = true;
-//                    for(Heartbeat h : server.onlineServers){
-//                        if(h.getDbVersion() > server.dbVersion) isUpToDate = false;
-//                    }
+                    for(Heartbeat h : server.onlineServers){
+                        if (h.getDbVersion() > server.dbVersion) {
+                            isUpToDate = false;
+                            break;
+                        }
+                    }
                     if (!isUpToDate) {
                         System.out.println("[ ! ] Database is not up to date, updating...");
                         // Server becomes unavailable
@@ -121,7 +126,6 @@ public class ThreadHeartbeat extends Thread {
                                 ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
                                 oos.writeObject(server.onlineServers);
                                 oos.flush();
-                                System.out.println("sent list of available servers to client");
                             } catch (IOException e) {
                                 System.out.println("[ ! ] An error has occurred while sending list of available servers to client");
                                 System.out.println("      " + e.getMessage());
@@ -143,36 +147,17 @@ public class ThreadHeartbeat extends Thread {
                         DatagramPacket datagramPacket = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
                         server.ms.send(datagramPacket);
 
-                        // FIXME: pedir ao servidor a base de dados atualizada
+//                        // FIXME: pedir ao servidor a base de dados atualizada
 //                        synchronized (server.onlineServers){
-//                            // Get the server with the highest database version and the loweast load
-//                            Heartbeat hb1 = server.onlineServers.stream()
-//                                    .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
-//                                    .lastEntry().getValue().stream()
-//                                    .min(new HeartbeatComparatorLoad()).get();
-//
-//                            Socket s = new Socket("localhost", hb1.getPort());
+//                            Socket s = new Socket(hb.getIp(), hb.getPort());
 //                            ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-//                            File file = new File("database.db");
-//                            FileOutputStream fos = new FileOutputStream(file);
-//
-//                            // Server sends request to server with the highest database version and lowest load
 //                            oos.writeObject("GET_DATABASE");
 //                            oos.flush();
-//
-//                            byte[] msgByte = new byte[4000];
-//
-//                            int bytesRead;
-//                            while ((bytesRead = s.getInputStream().read(msgByte)) != -1) {
-//                                fos.write(msgByte, 0, bytesRead);
-//                                fos.flush();
-//                                System.out.println(bytesRead);
+//                            ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+//                            synchronized (server.dbVersions){
+//                                server.dbVersions = (HashMap<Integer, String>) ois.readObject();
+//                                server.updateDatabase(server.dbVersions);
 //                            }
-//                            fos.close();
-//                            s.close();
-//
-//                            server.dbVersion = hb1.getDbVersion();
-//                            server.isAvailable = true;
 //                        }
                     }
                 } catch(SocketTimeoutException e) {

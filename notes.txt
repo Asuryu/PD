@@ -41,3 +41,8 @@ Remove Reservation output Server-Client:
     - RESERVA_SUCCESSFULLY_REMOVED || Reservation successfully removed
     - RESERVA_LUGAR_SUCCESSFULLY_REMOVED || Reservation and seat successfully removed
     - ERROR_OCCURED || Error occured, for more information check server output
+
+
+// TODO: Send to the client the seats reserved by the user
+// TODO: Pay function
+// TODO: Insert and remove shows function (Admin)
