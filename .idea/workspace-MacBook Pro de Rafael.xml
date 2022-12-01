@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="2986b12e-a19a-4cde-a49a-67597ea2d90d" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2HDwdoxPR9DqQy8MMzbBAae7YOW" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/OneDrive - ISEC/Faculdade/4º Ano/1º Semestre/PD/TP_PD_2022_2023&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Application.Cliente 5001">
+    <configuration name="Cliente 5001" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="Client.Cliente" />
+      <module name="PD" />
+      <option name="PROGRAM_PARAMETERS" value="&quot;127.0.0.1&quot; &quot;5001&quot;" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Servidor 5001" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="Server.Servidor" />
+      <module name="PD" />
+      <option name="PROGRAM_PARAMETERS" value="&quot;5001&quot; &quot;./databases/&quot;" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Servidor 5002" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="Server.Servidor" />
+      <module name="PD" />
+      <option name="PROGRAM_PARAMETERS" value="&quot;5002&quot; &quot;./databases/&quot;" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.Servidor 5001" />
+      <item itemvalue="Application.Servidor 5002" />
+      <item itemvalue="Application.Cliente 5001" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2986b12e-a19a-4cde-a49a-67597ea2d90d" name="Changes" comment="" />
+      <created>1667833051693</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1667833051693</updated>
+      <workItem from="1667833054433" duration="705000" />
+      <workItem from="1667836145475" duration="586000" />
+      <workItem from="1667913799387" duration="2982000" />
+      <workItem from="1667921821469" duration="8106000" />
+      <workItem from="1668005551794" duration="155000" />
+      <workItem from="1668252082484" duration="3071000" />
+      <workItem from="1668433365435" duration="1289000" />
+      <workItem from="1668523802700" duration="3936000" />
+      <workItem from="1668612707644" duration="225000" />
+      <workItem from="1668621933017" duration="6455000" />
+      <workItem from="1669646661737" duration="4392000" />
+      <workItem from="1669718538182" duration="25000" />
+      <workItem from="1669718577569" duration="9000" />
+      <workItem from="1669745280988" duration="3376000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+</project>
