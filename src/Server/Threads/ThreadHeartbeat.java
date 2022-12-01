@@ -109,10 +109,12 @@ public class ThreadHeartbeat extends Thread {
                     }
 
                     boolean isUpToDate = true;
-                    for(Heartbeat h : server.onlineServers){
-                        if (h.getDbVersion() > server.dbVersion) {
-                            isUpToDate = false;
-                            break;
+                    synchronized (server.onlineServers){
+                        for(Heartbeat h : server.onlineServers){
+                            if (h.getDbVersion() > server.dbVersion) {
+                                isUpToDate = false;
+                                break;
+                            }
                         }
                     }
                     if (!isUpToDate) {
