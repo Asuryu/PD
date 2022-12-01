@@ -6,6 +6,7 @@ import Server.Heartbeat;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -13,26 +14,26 @@ import java.util.Scanner;
 public class ThreadEnviaServidor extends Thread {
     private final Cliente c;
     private ArrayList<Heartbeat> servers;
-    private TextUserInterface textUserInterface;
+    private TextUserInterface textUserInterface = new TextUserInterface();
     private Scanner scanner = new Scanner(System.in);
-
-    public ThreadEnviaServidor(Cliente c) {
-        this.c = c;
-    }
 
     public ThreadEnviaServidor(Cliente c, ArrayList<Heartbeat> servers) {
         this.c = c;
-        this.servers = servers;
-        this.textUserInterface = new TextUserInterface();
+
+        this.servers= servers;
+
     }
 
     @Override
     public void run() {
         for (Heartbeat heartbeat : servers) {
             try {
-                Socket socket = new Socket("0.0.0.0", heartbeat.getPort());
+
+                Socket socket = new Socket(InetAddress.getLocalHost(), heartbeat.getPort());
+
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+                ThreadAtendeServidor threadAtendeServidor = new ThreadAtendeServidor(c,socket);
+                threadAtendeServidor.start();
                 int opt = textUserInterface.mainMenu();
                 switch (opt) {
                     case 1:
