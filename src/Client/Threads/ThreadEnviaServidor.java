@@ -117,24 +117,44 @@ public class ThreadEnviaServidor extends Thread {
                                 case 5:
                                     objectOutputStream.writeObject("SELECT_SHOW");
                                     objectOutputStream.flush();
+                                    synchronized (c.progress) {
+                                        if (!c.progress)
+                                            break;
+                                    }
                                     break;
                                 case 6:
                                     String seatsAndPrices[] = {"AVAILABLE_SEATS_AND_PRICE"};
                                     objectOutputStream.writeObject(seatsAndPrices);
                                     objectOutputStream.flush();
+                                    synchronized (c.progress) {
+                                        if (!c.progress)
+                                            break;
+                                    }
                                     break;
                                 case 7:
                                     String selectSeats[] = {"SELECT_SEATS"};
                                     objectOutputStream.writeObject(selectSeats);
                                     objectOutputStream.flush();
+                                    synchronized (c.progress) {
+                                        if (!c.progress)
+                                            break;
+                                    }
                                     break;
                                 case 8:
                                     objectOutputStream.writeObject("VALIDATE_RESERVATION");
                                     objectOutputStream.flush();
+                                    synchronized (c.progress) {
+                                        if (!c.progress)
+                                            break;
+                                    }
                                     break;
                                 case 9:
                                     objectOutputStream.writeObject("REMOVE_RESERVATION");
                                     objectOutputStream.flush();
+                                    synchronized (c.progress) {
+                                        if (!c.progress)
+                                            break;
+                                    }
                                     break;
 
                             }

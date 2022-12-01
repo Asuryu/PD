@@ -30,12 +30,19 @@ Available Seats and Price output Server-Client:
     [!] Receive ArrayList<String> seats = new ArrayList<>();
     - If seats.size() == 0, then no seats found
     - ERROR_OCCURED || Error occured, for more information check server output
+
 Select Seat output Server-Client:
     [!] Receive String with seats wanted separated by comma (,)
     - SEAT_ALREADY_RESERVED || Seat already reserved
     - SEAT_RESERVATION_SUCCESSFUL || Seat reservation successful
     - ERROR_OCCURED || Error occured, for more information check server output
+
 Remove Reservation output Server-Client:
     - RESERVA_SUCCESSFULLY_REMOVED || Reservation successfully removed
     - RESERVA_LUGAR_SUCCESSFULLY_REMOVED || Reservation and seat successfully removed
     - ERROR_OCCURED || Error occured, for more information check server output
+
+
+// TODO: Send to the client the seats reserved by the user
+// TODO: Pay function
+// TODO: Insert and remove shows function (Admin)

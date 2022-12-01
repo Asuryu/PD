@@ -29,6 +29,8 @@ public class ThreadAtendeServidor extends Thread {
             ArrayList<String> pP = (ArrayList<String>)objectInputStream.readObject();
             ArrayList<String> cS = (ArrayList<String>)objectInputStream.readObject();
             ArrayList<String> sS = (ArrayList<String>)objectInputStream.readObject();
+            ArrayList<String> sp = (ArrayList<String>)objectInputStream.readObject();
+            Integer seatsNumber[] = (Integer[]) objectInputStream.readObject();
             HashMap<String, String> filters = new HashMap<>();
             String request = (String) objectInputStream.readObject();
             String[] arrayRequest = request.split(" ");
@@ -50,9 +52,11 @@ public class ThreadAtendeServidor extends Thread {
 
                 case "SELECT_SHOW" -> seeInfoAboutShow(sS);
 
-                case "AVAILABLE_SEATS_AND_PRICE" -> availableSeatsAndPrice();
+                case "AVAILABLE_SEATS_AND_PRICE" -> availableSeatsAndPrice(sp);
+//ultimo
                 case "SEAT_RESERVATION_SUCCESSFUL" -> selectSeatSucess();
                 case "SEAT_ALREADY_RESERVED" -> selectSeatAlreadyReserved();
+
                 case "RESERVA_SUCCESSFULLY_REMOVED" -> reserveSuccessfullyRemoved();
                 case "RESERVA_LUGAR_SUCCESSFULLY_REMOVED" ->  reservePlaceSuccessfullyRemoved();
 
@@ -77,6 +81,9 @@ public class ThreadAtendeServidor extends Thread {
     private void sucessAdminLogin() {
         System.out.println("Login do administrador com sucesso");
         synchronized (c.isLogged) {
+            c.isLogged = true;
+        }
+        synchronized (c.isAdmin) {
             c.isLogged = true;
         }
     }
@@ -174,17 +181,41 @@ public class ThreadAtendeServidor extends Thread {
         }
     }
 
-    private void availableSeatsAndPrice() {
+    private void availableSeatsAndPrice(ArrayList<String> seatsAprice) {
+        if (seatsAprice.size() == 0) {
+            System.out.println("Listar sitios");
+
+        } else if (seatsAprice.size() >= 1) {
+            for (int i = 0; i < seatsAprice.size(); i++)
+                System.out.println(seatsAprice.get(i));
+        }
+        synchronized (c.progress) {
+            if (!c.progress)
+                c.progress = true;
+        }
     }
 
     private void selectSeatSucess() {
     }
 
     private void selectSeatAlreadyReserved() {
+        System.out.println("O lugar ja esta reservado");
+        synchronized (c.progress) {
+            c.progress = false;
+        }
     }
 
     private void reserveSuccessfullyRemoved() {
+        System.out.println("Reserva removida com sucesso");
+        synchronized (c.progress) {
+            c.progress = true;
+        }
     }
 
-    private void reservePlaceSuccessfullyRemoved(){}
+    private void reservePlaceSuccessfullyRemoved(){
+        System.out.println("Lugar reservado removido com sucesso");
+        synchronized (c.progress) {
+            c.progress = false;
+        }
+    }
 }
