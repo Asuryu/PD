@@ -139,12 +139,12 @@ public class Servidor {
     }
 
     private void mostraASCII(){
-        System.out.println("██████╗  ██████╗ ██╗      ██████╗ ██████╗");
-        System.out.println("██╔══██╗██╔═══██╗██║      ██╔══██╗██╔══██╗");
-        System.out.println("██████╔╝██║   ██║██║█████╗██████╔╝██║  ██║");
-        System.out.println("██╔══██╗██║   ██║██║╚════╝██╔═══╝ ██║  ██║");
-        System.out.println("██████╔╝╚██████╔╝███████╗ ██║     ██████╔╝");
-        System.out.println("╚═════╝  ╚═════╝ ╚══════╝ ╚═╝     ╚═════╝ \n");
+        System.out.println("██████╗  ██████╗ ██╗          ██████╗ ██████╗");
+        System.out.println("██╔══██╗██╔═══██╗██║          ██╔══██╗██╔══██╗");
+        System.out.println("██████╔╝██║   ██║██║          ██████╔╝██║  ██║");
+        System.out.println("██╔══██╗██║   ██║██║          ██╔═══╝ ██║  ██║");
+        System.out.println("██████╔╝╚██████╔╝███████╗     ██║     ██████╔╝");
+        System.out.println("╚═════╝  ╚═════╝ ╚══════╝     ╚═╝     ╚═════╝ \n");
     }
 
     public synchronized void incDbVersion(String query){
