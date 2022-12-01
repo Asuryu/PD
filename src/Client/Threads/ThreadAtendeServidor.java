@@ -41,6 +41,7 @@ public class ThreadAtendeServidor extends Thread {
                 case "UPDATE_SUCCESSFUL" -> wasEditSucess();
                 case "USER_NOT_FOUND" -> userNotFound();
                 case "ERROR_OCCURED" -> erro();
+
                 case "AWAITING_PAYEMENT" -> awaitingPayementList(payements);
                 case "PAYEMENT_CONFIRMED" -> payementConfirmedList(payementsP);
                 case "SHOWS_LIST_SEARCH" -> showListSearch();
@@ -92,6 +93,7 @@ public class ThreadAtendeServidor extends Thread {
         }
     }
 
+
     private void wasEditSucess() {
         System.out.println("Os seus dados foram editados com sucesso");
         synchronized (c.wasEdit) {
@@ -101,7 +103,7 @@ public class ThreadAtendeServidor extends Thread {
     }
 
     private void userNotFound() {
-        System.out.println("O user nao foi encontrado na base de dados");
+        System.out.println("O utilizador nao foi encontrado na base de dados");
         synchronized (c.wasEdit) {
             if (!c.wasEdit)
                 c.wasEdit = false;
@@ -120,6 +122,7 @@ public class ThreadAtendeServidor extends Thread {
         }
 
     }
+
 
     private void awaitingPayementList(ArrayList p) {
         if (p.size() == 0) {
