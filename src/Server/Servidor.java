@@ -61,15 +61,17 @@ public class Servidor {
         e existirem servidores com uma cópia, pede uma cópia ao que tiver
         a base de dados com a versão mais atualizada e com menor carga */
 
-        Heartbeat hb = onlineServers.stream()
-                .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
-                .lastEntry().getValue().stream()
-                .min(new HeartbeatComparatorLoad()).get();
-
         if (!Files.exists(Path.of(DATABASES_PATH + DATABASE_NAME))) { // Não existe uma cópia local da base de dados
             Files.copy(Path.of(DATABASE_ORIGINAL), Path.of(DATABASES_PATH + DATABASE_NAME));
+            System.out.println("[ * ] No local copy of the database was found. A copy of the original database was created.");
             if (onlineServers.size() > 0) {
+                Heartbeat hb = onlineServers.stream()
+                        .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
+                        .lastEntry().getValue().stream()
+                        .min(new HeartbeatComparatorLoad()).get();
+
                 // Pedir cópia da base de dados ao servidor com a versão mais atualizada e com menor carga
+                System.out.println("[ · ] Requesting a copy of the database from server " + hb.getIp() + ":" + hb.getPort() + "...");
                 Socket s = new Socket(hb.getIp(), hb.getPort());
                 ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
                 oos.writeObject("GET_DATABASE");
@@ -82,22 +84,30 @@ public class Servidor {
                 updateDatabase(dbVersions);
             }
         } else { // Existe uma cópia local da base de dados
-            System.out.println("Existe uma cópia local da base de dados");
-            // Verificar se a base de dados está atualizada
-            System.out.println(hb.getDbVersion());
-            System.out.println(getDbVersion());
-            if(hb.getDbVersion() > getDbVersion()) {
-                // Pedir cópia da base de dados ao servidor com a versão mais atualizada e com menor carga
-                Socket s = new Socket(hb.getIp(), hb.getPort());
-                ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-                oos.writeObject("GET_DATABASE");
-                oos.flush();
+            if(onlineServers.size() > 0) {
+                Heartbeat hb = onlineServers.stream()
+                        .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
+                        .lastEntry().getValue().stream()
+                        .min(new HeartbeatComparatorLoad()).get();
 
-                // Receber cópia da base de dados
-                ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
-                HashMap<Integer, String> dbVersions = (HashMap<Integer, String>) ois.readObject();
-                System.out.println(dbVersions);
-                updateDatabase(dbVersions);
+                System.out.println("Versão do servidor: " + hb.getDbVersion());
+                System.out.println("Versão local: " + getDbVersion());
+                if(hb.getDbVersion() > getDbVersion()) {
+                    // Pedir cópia da base de dados ao servidor com a versão mais atualizada e com menor carga
+                    System.out.println("[ · ] Requesting a copy of the database from server " + hb.getIp() + ":" + hb.getPort() + "...");
+                    Socket s = new Socket(hb.getIp(), hb.getPort());
+                    ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+                    oos.writeObject("GET_DATABASE");
+                    oos.flush();
+
+                    // Receber cópia da base de dados
+                    ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+                    HashMap<Integer, String> dbVersions = (HashMap<Integer, String>) ois.readObject();
+                    System.out.println(dbVersions);
+                    updateDatabase(dbVersions);
+                }
+            } else {
+                System.out.println("[ ! ] No online servers were found. The local copy of the database will be used.");
             }
         }
 
