@@ -18,6 +18,7 @@ public class Cliente {
     public Boolean isReg;// Flag to indicate if the client is register or not
     public Boolean wasEdit;
     public Boolean progress;
+    public Boolean isAdmin;
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public ArrayList<Heartbeat> servers = new ArrayList<>();
     public int port;
@@ -32,6 +33,7 @@ public class Cliente {
         isReg = false;
         wasEdit = false;
         progress = false;
+        isAdmin = false;
         while (true) {
             try {
                 datagramSocket = new DatagramSocket();

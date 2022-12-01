@@ -84,6 +84,9 @@ public class ThreadAtendeServidor extends Thread {
         synchronized (c.isLogged) {
             c.isLogged = true;
         }
+        synchronized (c.isAdmin) {
+            c.isLogged = true;
+        }
     }
     private void sucessLogin() {
         System.out.println("Login do utilizador com sucesso");
