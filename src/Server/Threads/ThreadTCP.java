@@ -30,7 +30,7 @@ public class ThreadTCP extends Thread {
                   ThreadCliente threadCliente = new ThreadCliente(server, client);
                   threadCliente.start();
 
-                  server.sendOnlineServers(); // Send list of online servers to the all clients
+                  // server.sendOnlineServers(); // Send list of online servers to the all clients
 
               }
          } catch (Exception e) {
