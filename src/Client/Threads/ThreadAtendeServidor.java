@@ -37,6 +37,7 @@ public class ThreadAtendeServidor extends Thread {
                 case "ADMIN_LOGIN_SUCCESSFUL" -> sucessAdminLogin();
                 case "LOGIN_SUCCESSFUL" -> sucessLogin();
                 case "LOGIN_FAILED" -> loginFailed();
+
                 case "UPDATE_SUCCESSFUL" -> wasEditSucess();
                 case "USER_NOT_FOUND" -> userNotFound();
                 case "ERROR_OCCURED" -> erro();
@@ -71,21 +72,21 @@ public class ThreadAtendeServidor extends Thread {
     }
 
     private void sucessAdminLogin() {
-        System.out.println("Login do admin com sucesso");
+        System.out.println("Login do administrador com sucesso");
         synchronized (c.isLogged) {
             c.isLogged = true;
         }
     }
 
     private void sucessLogin() {
-        System.out.println("Login do user com sucesso");
+        System.out.println("Login do utilizador com sucesso");
         synchronized (c.isLogged) {
             c.isLogged = true;
         }
     }
 
     private void loginFailed() {
-        System.out.println("Login failed");
+        System.out.println("Login falhou");
         synchronized (c.isLogged) {
             c.isLogged = false;
         }
