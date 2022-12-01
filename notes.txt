@@ -5,31 +5,38 @@ Login output Server-Client:
     - ADMIN_LOGIN_SUCCESSFUL || Admin login successful
     - LOGIN_SUCCESSFUL || User login successful
     - LOGIN_FAILED || User login failed
+
 Edit Profile output Server-Client:
     - UPDATE_SUCCESSFUL || Edit profile successful
     - USER_NOT_FOUND || User not found
     - ERROR_OCCURED || Error occured, for more information check server output
+
 List Payments [Awaiting payment / Payment confirmed] output Server-Client:
     [!] Receive ArrayList<String> payments = new ArrayList<>();
     - If payments.size() == 0, then no payments found
     - ERROR_OCCURED || Error occured, for more information check server output
+
 Show List Search output Server-Client:
     [!] Send HashMap<String, String> filters = new HashMap<>();
     [!] Receive ArrayList<String> shows = new ArrayList<>();
     - ERROR_OCCURED || Error occured, for more information check server output
+
 Select Show output Server-Client:
     [!] Receive ArrayList<String> shows = new ArrayList<>();
     - If shows.size() == 0, then no shows found
     - ERROR_OCCURED || Error occured, for more information check server output
+
 Available Seats and Price output Server-Client:
     [!] Receive ArrayList<String> seats = new ArrayList<>();
     - If seats.size() == 0, then no seats found
     - ERROR_OCCURED || Error occured, for more information check server output
+
 Select Seat output Server-Client:
     [!] Receive String with seats wanted separated by comma (,)
     - SEAT_ALREADY_RESERVED || Seat already reserved
     - SEAT_RESERVATION_SUCCESSFUL || Seat reservation successful
     - ERROR_OCCURED || Error occured, for more information check server output
+
 Remove Reservation output Server-Client:
     - RESERVA_SUCCESSFULLY_REMOVED || Reservation successfully removed
     - RESERVA_LUGAR_SUCCESSFULLY_REMOVED || Reservation and seat successfully removed
