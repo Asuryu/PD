@@ -9,8 +9,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 
 public class Cliente {
     public DatagramSocket datagramSocket; // Socket to receive UDP packets
@@ -34,25 +32,28 @@ public class Cliente {
         progress = false;
         while (true) {
             try {
+                mostraASCII();
                 datagramSocket = new DatagramSocket();
                 datagramSocket.connect(InetAddress.getByName(ip), port);
                 String live = "I'M ALIVE";
                 DatagramPacket datagramPacket = new DatagramPacket(live.getBytes(), live.length());
-                //send packet
                 datagramSocket.send(datagramPacket);
+                System.out.println("[ * ] Requesting server list to " + ip + ":" + port);
 
                 // Recebe a lista de servidores disponíveis
                 DatagramPacket dp = new DatagramPacket(new byte[4096], 4096);
                 datagramSocket.receive(dp);
                 ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(dp.getData(), 0, dp.getLength()));
                 servers = (ArrayList<Heartbeat>) in.readObject();
-                System.out.println(Arrays.toString(servers.toArray()));
-
-
+                System.out.println(servers);
+                if (servers.size() == 0) {
+                    System.out.println("[ * ] There are no servers available");
+                    break;
+                }
             } catch (Error e) {
                 //Caso ocorra erro a ligar ao servidor ele cancela
-                System.out.println("Erro ao conecetar a um servidor");
-                break;
+                System.out.println("[ ! ] An error has while receiving the server list");
+                System.out.println("      " + e.getMessage());
             }
 
             ThreadEnviaServidor threadEnviaServidor = new ThreadEnviaServidor(this, servers);
@@ -73,9 +74,8 @@ public class Cliente {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("A comecar o cliente....");
         if (args.length != 2) {
-            System.err.println("[ERROR]Sintaxe: <lb address> <lb port>");
+            System.err.println("[ ! ] Syntax: <lb address> <lb port>");
             return;
         }
         try {
@@ -87,5 +87,15 @@ public class Cliente {
         }
 
     }
+
+    private void mostraASCII(){
+        System.out.println("██████╗  ██████╗ ██╗          ██████╗ ██████╗");
+        System.out.println("██╔══██╗██╔═══██╗██║          ██╔══██╗██╔══██╗");
+        System.out.println("██████╔╝██║   ██║██║          ██████╔╝██║  ██║");
+        System.out.println("██╔══██╗██║   ██║██║          ██╔═══╝ ██║  ██║");
+        System.out.println("██████╔╝╚██████╔╝███████╗     ██║     ██████╔╝");
+        System.out.println("╚═════╝  ╚═════╝ ╚══════╝     ╚═╝     ╚═════╝ \n");
+    }
+
 }
 

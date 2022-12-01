@@ -22,14 +22,15 @@ public class ThreadEnviaServidor extends Thread {
 
     public ThreadEnviaServidor(Cliente c, ArrayList<Heartbeat> servers) {
         this.c = c;
-        servers = servers;
+        this.servers = servers;
+        this.textUserInterface = new TextUserInterface();
     }
 
     @Override
     public void run() {
         for (Heartbeat heartbeat : servers) {
             try {
-                Socket socket = new Socket("10.65.132.193", heartbeat.getPort());
+                Socket socket = new Socket("0.0.0.0", heartbeat.getPort());
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
                 int opt = textUserInterface.mainMenu();
@@ -156,12 +157,13 @@ public class ThreadEnviaServidor extends Thread {
                         }
                         break;
                     case 3:
-                        System.out.println("Saindo do sistema;");
+                        System.out.println("[ * ] Exiting the application...");
                         return;
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 System.out.println("[ ! ] An error has occurred while receiving a TCP connection");
-                e.printStackTrace();
+                System.out.println("     " + e.getMessage());
             }
         }
 
