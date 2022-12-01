@@ -38,7 +38,7 @@ public class TextUserInterface {
         System.out.println("4 - Consultar e pesquisa de espetaculos");
         System.out.println("5 - Selecionar espetaculo");
         System.out.println("6 - Ver lugar disponiveis e respectivos precos");
-        System.out.println("7 - Consultar reservas pagas");
+        System.out.println("7 - Selecionar lugares pretendidos");
         System.out.println("8 - Validar reserva");
         System.out.println("9 - Remover reserva");
         do {
