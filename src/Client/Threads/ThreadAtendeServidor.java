@@ -28,6 +28,8 @@ public class ThreadAtendeServidor extends Thread {
             objectInputStream = new ObjectInputStream(c.socket.getInputStream());
             ArrayList<String> p = (ArrayList<String>)objectInputStream.readObject();
             ArrayList<String> pP = (ArrayList<String>)objectInputStream.readObject();
+            ArrayList<String> cS = (ArrayList<String>)objectInputStream.readObject();
+            ArrayList<String> sS = (ArrayList<String>)objectInputStream.readObject();
             HashMap<String, String> filters = new HashMap<>();
             String request = (String) objectInputStream.readObject();
             String[] arrayRequest = request.split(" ");
@@ -45,8 +47,10 @@ public class ThreadAtendeServidor extends Thread {
                 case "AWAITING_PAYEMENT" -> awaitingPayementList(p);
                 case "PAYEMENT_CONFIRMED" -> payementConfirmedList(pP);
 
-                case "SHOWS_LIST_SEARCH" -> showListSearch();
-                case "SELECT_SHOW" -> seeInfoAboutShow();
+                case "SHOWS_LIST_SEARCH" -> showListSearch(cS);
+
+                case "SELECT_SHOW" -> seeInfoAboutShow(sS);
+
                 case "AVAILABLE_SEATS_AND_PRICE" -> availableSeatsAndPrice();
                 case "SEAT_RESERVATION_SUCCESSFUL" -> selectSeatSucess();
                 case "SEAT_ALREADY_RESERVED" -> selectSeatAlreadyReserved();
@@ -143,10 +147,32 @@ public class ThreadAtendeServidor extends Thread {
         }
     }
 
-    private void showListSearch() {
+    private void showListSearch(ArrayList<String>shows) {
+        if (shows.size() == 0) {
+            System.out.println("Nao existem espetaculos");
+
+        } else if (shows.size() >= 1) {
+            for (int i = 0; i < shows.size(); i++)
+                System.out.println(shows.get(i));
+        }
+        synchronized (c.progress) {
+            if (!c.progress)
+                c.progress = true;
+        }
     }
 
-    private void seeInfoAboutShow() {
+    private void seeInfoAboutShow(ArrayList<String> sShow) {
+        if (sShow.size() == 0) {
+            System.out.println("Nao existe informação sobre este espetaculos");
+
+        } else if (sShow.size() >= 1) {
+            for (int i = 0; i < sShow.size(); i++)
+                System.out.println(sShow.get(i));
+        }
+        synchronized (c.progress) {
+            if (!c.progress)
+                c.progress = true;
+        }
     }
 
     private void availableSeatsAndPrice() {

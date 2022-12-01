@@ -108,6 +108,10 @@ public class ThreadEnviaServidor extends Thread {
                                     } while (i != l);
                                     objectOutputStream.writeObject(searchAndConsult);
                                     objectOutputStream.flush();
+                                    synchronized (c.progress) {
+                                        if (!c.progress)
+                                            break;
+                                    }
                                     break;
                                 case 5:
                                     objectOutputStream.writeObject("SELECT_SHOW");

@@ -15,14 +15,17 @@ List Payments [Awaiting payment / Payment confirmed] output Server-Client:
     [!] Receive ArrayList<String> payments = new ArrayList<>();
     - If payments.size() == 0, then no payments found
     - ERROR_OCCURED || Error occured, for more information check server output
+
 Show List Search output Server-Client:
     [!] Send HashMap<String, String> filters = new HashMap<>();
     [!] Receive ArrayList<String> shows = new ArrayList<>();
     - ERROR_OCCURED || Error occured, for more information check server output
+
 Select Show output Server-Client:
     [!] Receive ArrayList<String> shows = new ArrayList<>();
     - If shows.size() == 0, then no shows found
     - ERROR_OCCURED || Error occured, for more information check server output
+
 Available Seats and Price output Server-Client:
     [!] Receive ArrayList<String> seats = new ArrayList<>();
     - If seats.size() == 0, then no seats found
