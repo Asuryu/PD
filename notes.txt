@@ -33,8 +33,8 @@ Available Seats and Price output Server-Client:
 
 Select Seat output Server-Client:
     [!] Receive String with seats wanted separated by comma (,)
-    - SEAT_ALREADY_RESERVED || Seat already reserved
-    - SEAT_RESERVATION_SUCCESSFUL || Seat reservation successful
+    - SEAT_%d_ALREADY_RESERVED || Seat %d already reserved
+    - SEAT_%d_RESERVATION_SUCCESSFUL || Seat %d reservation successful
     - ERROR_OCCURED || Error occured, for more information check server output
 
 Remove Reservation output Server-Client:
@@ -42,7 +42,16 @@ Remove Reservation output Server-Client:
     - RESERVA_LUGAR_SUCCESSFULLY_REMOVED || Reservation and seat successfully removed
     - ERROR_OCCURED || Error occured, for more information check server output
 
+Payment output Server-Client:
+    - PAYMENT_SUCCESSFUL || Payment successful
+    - ERROR_OCCURED || Error occured, for more information check server output
 
-// TODO: Send to the client the seats reserved by the user
-// TODO: Pay function
-// TODO: Insert and remove shows function (Admin)
+Insert Show output Server-Client:
+    [!] Admin authentication already done
+    - SHOW_INSERTED_SUCCESSFULLY || Show inserted successfully
+    - ERROR_OCCURED || Error occured, for more information check server output
+
+Remove Show output Server-Client:
+    [!] Admin authentication already done
+    - SHOW_REMOVED_SUCCESSFULLY || Show removed successfully
+    - ERROR_OCCURED || Error occured, for more information check server output

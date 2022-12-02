@@ -34,6 +34,9 @@ public class Servidor {
     public SocketAddress sa; // Socket address
     public NetworkInterface ni; // Network interface
 
+    public static final int INITIAL_HEARTBEAT_WAIT = 30 * 1000; // Time to wait for heartbeats in the beginning of the server (in milliseconds)
+    public static final int HEARTBEAT_INTERVAL = 10 * 1000; // Interval between heartbeats (in milliseconds)
+
     public Boolean isAvailable = true; // Flag to indicate if the server is available to receive connections
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public final ArrayList<Heartbeat> onlineServers = new ArrayList<>(); // List of online servers
@@ -54,7 +57,7 @@ public class Servidor {
         // Começar à escuta por heartbeats (30 segundos)
         ThreadInicialHeartbeat tihb = new ThreadInicialHeartbeat(this);
         tihb.start();
-        tihb.join(2000);
+        tihb.join(Servidor.INITIAL_HEARTBEAT_WAIT);
         ms.leaveGroup(sa, ni);
 
         /* Se o servidor não tiver uma cópia local da base de dados
@@ -148,7 +151,8 @@ public class Servidor {
         ThreadTCP tcp = new ThreadTCP(this);
         ThreadAtendeClientes tac = new ThreadAtendeClientes(this);
         ThreadHeartbeat thb = new ThreadHeartbeat(this);
-        threads.add(tcp); threads.add(tac); threads.add(thb);
+        ThreadConsolaAdmin tca = new ThreadConsolaAdmin(this);
+        threads.add(tcp); threads.add(tac); threads.add(thb); threads.add(tca);
 
         for(Thread thrd : threads) {
             thrd.start();
@@ -222,7 +226,11 @@ public class Servidor {
         dbConn = DriverManager.getConnection(JDBC_STRING);
         Statement stmt = dbConn.createStatement();
         for (Map.Entry<Integer, String> entry : dbVersions.entrySet()) {
-            stmt.executeUpdate(entry.getValue());
+            try {
+                stmt.executeUpdate(entry.getValue());
+            } catch (SQLException e) {
+                System.out.println("[ ! ] Error updating database: " + e.getMessage());
+            }
         }
         int lastKey = 0;
         for (Integer key : dbVersions.keySet()) {

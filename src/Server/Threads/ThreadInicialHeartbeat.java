@@ -28,7 +28,7 @@ public class ThreadInicialHeartbeat extends Thread {
     public void run(){
         try {
             server.ms = new MulticastSocket(server.MULTICAST_PORT);
-            server.ms.setSoTimeout(2000);
+            server.ms.setSoTimeout(Servidor.INITIAL_HEARTBEAT_WAIT);
             server.ipGroup = InetAddress.getByName(server.MULTICAST_IP);
             server.sa = new InetSocketAddress(server.ipGroup, server.MULTICAST_PORT);
             server.ni = NetworkInterface.getByName("en0");
@@ -40,7 +40,7 @@ public class ThreadInicialHeartbeat extends Thread {
         }
 
         try{
-            System.out.println("[ * ] Receiving heartbeats for the next 30 seconds");
+            System.out.println("[ * ] Receiving heartbeats for the next " + Servidor.INITIAL_HEARTBEAT_WAIT / 1000 + " seconds");
             while(!isInterrupted()){
                 DatagramPacket dp = new DatagramPacket(new byte[256], 256);
                 server.ms.receive(dp);

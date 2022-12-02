@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ThreadCliente extends Thread{
     protected final Servidor server;
@@ -17,6 +18,7 @@ public class ThreadCliente extends Thread{
     private int clientID;
     private int showID;
     private int reservationID;
+    private boolean admin = false;
     private ObjectOutputStream out;
     private ObjectInputStream in;
 
@@ -40,20 +42,45 @@ public class ThreadCliente extends Thread{
                     case "EDIT_PROFILE" -> edit_profile(arrayRequest[1], arrayRequest[2], arrayRequest[3]);
                     case "AWAITING_PAYMENT_CONFIRMATION" -> listPayments("AWAITING_PAYMENT_CONFIRMATION");
                     case "PAYMENT_CONFIRMED" -> listPayments("PAYMENT_CONFIRMED");
-                    case "SHOWS_LIST_SEARCH" -> {}//shows_list_search(arrayRequest[1]);
+                    case "SHOWS_LIST_SEARCH" -> {
+                        HashMap<String, String> filters = new HashMap<>();
+                        for (int i = 1; i < arrayRequest.length; i++) {
+                            String[] filter = arrayRequest[i].split(" ");
+                            filters.put(filter[0], filter[1]);
+                        }
+                        shows_list_search(filters);
+                    }
                     case "SELECT_SHOW" -> select_show();
                     case "AVAILABLE_SEATS_AND_PRICE" -> available_seats_and_price(Integer.parseInt(arrayRequest[1]));
                     case "SELECT_SEATS" -> select_seats(arrayRequest[1]);
                     case "REMOVE_RESERVATION" -> remove_reservation(Integer.parseInt(arrayRequest[1]));
+                    case "PAY" -> pay(Integer.parseInt(arrayRequest[1]));
                     default -> client.close();
                 }
                 synchronized (server.activeConnections) {
                     server.activeConnections.remove(client);
                 }
+                
+                // send heartbeat to multicast
+                ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+                ObjectOutputStream out = new ObjectOutputStream(bOut);
+                server.dbVersion = server.getDbVersion();
+                Heartbeat hb = new Heartbeat(server.TCP_IP, server.TCP_PORT, server.dbVersion, server.activeConnections.size(), server.isAvailable);
+                out.writeObject(hb);
+                out.flush();
+                DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
+                server.ms.send(dp);
             }
         }
         catch (SocketException e){
-            System.out.println("[ ! ] Client " + client.getInetAddress().getHostAddress() + ":" + client.getPort() + " has disconnected");
+            try {
+                server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+                Statement stmt = server.dbConn.createStatement();
+                stmt.executeQuery("UPDATE utilizador SET autenticado = 0 WHERE id = '" + clientID + "'");
+                System.out.println("[ ! ] Client " + client.getInetAddress().getHostAddress() + ":" + client.getPort() + " has disconnected");
+                admin = false;
+            } catch (SQLException ignored) {}
+
         }
         catch (IOException | ClassNotFoundException | SQLException e){
             e.printStackTrace();
@@ -68,6 +95,51 @@ public class ThreadCliente extends Thread{
                 e.printStackTrace();
             }
         }
+    }
+
+    private void removeShow(int showID) throws IOException {
+        try {
+            if(admin){
+                server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+                Statement stmt = server.dbConn.createStatement();
+                stmt.executeQuery("DELETE FROM espetaculo WHERE id = '" + showID + "'");
+                out.writeObject("SHOW_REMOVED_SUCCESSFULLY");
+            }
+        } catch (SQLException | IOException e) {
+            out.writeObject("ERROR_OCCURED");
+            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("      " + e.getMessage());
+        }
+    }
+    private void insertShow(String data) throws IOException {
+        try{
+            if(admin){
+                String[] arrayData = data.split(",");
+                server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+                Statement stmt = server.dbConn.createStatement();
+                stmt.executeQuery("INSERT INTO espetaculo (nome, data, preco, lotacao, lotacao_maxima) VALUES ('" + arrayData[0] + "', '" + arrayData[1] + "', '" + arrayData[2] + "', '" + arrayData[3] + "', '" + arrayData[4] + "')");
+                out.writeObject("SHOW_INSERTED_SUCCESSFULLY");
+            }
+        }catch (SQLException | IOException e) {
+            out.writeObject("ERROR_OCCURED");
+            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("      " + e.getMessage());
+        }
+    }
+
+    private void pay(int reservationID) throws IOException, SQLException {
+        try{
+            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+            Statement stmt = server.dbConn.createStatement();
+            String format = ("UPDATE reserva SET pago = 1 WHERE id = '" + reservationID + "' AND id_utilizador = '"+clientID+"'");
+            stmt.executeUpdate(format);
+            out.writeObject("PAYMENT_CONFIRMED");
+        }catch (SQLException e){
+            out.writeObject("ERROR_OCCURED");
+            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("      " + e.getMessage());
+        }
+
     }
 
     private void remove_reservation(int reservationID) throws IOException, SQLException {
@@ -111,11 +183,11 @@ public class ThreadCliente extends Thread{
             for (String seat : seats) {
                 String format2 = "INSERT INTO reserva_lugar (id_reserva, id_lugar) VALUES (resevationID, seat)";
                 if(stmt.executeUpdate(format2) == 0){
-                    out.writeObject("SEAT_ALREADY_RESERVED");
+                    out.writeObject("SEAT_"+ seat +"_ALREADY_RESERVED");
                     out.flush();
                     return;
                 }else {
-                    out.writeObject("SEAT_RESERVATION_SUCCESSFUL");
+                    out.writeObject("SEAT_"+ seat +"_RESERVATION_SUCCESSFUL");
                     out.flush();
                     server.incDbVersion(format2);
                 }
@@ -177,41 +249,31 @@ public class ThreadCliente extends Thread{
             Statement stmt = server.dbConn.createStatement();
             ResultSet rs;
             ArrayList<String> shows = new ArrayList<>();
-            if(filters.get("descricao") != null && filters.get("tipo") != null && filters.get("data_hora") != null && filters.get("local") != null && filters.get("localidade") != null && filters.get("pais") != null){
-                rs = stmt.executeQuery("SELECT * FROM espetaculos WHERE descricao LIKE '%" + filters.get("descricao") + "%' AND tipo LIKE '%" + filters.get("tipo") + "%' AND data_hora LIKE '%" + filters.get("data_hora") + "%' AND local LIKE '%" + filters.get("local") + "%' AND localidade LIKE '%" + filters.get("localidade") + "%' AND pais LIKE '%" + filters.get("pais") + "%'");
-                while (rs.next()) {
-                    shows.add(rs.getString("id") + " " + rs.getString("name") + " " + rs.getString("date") + " " + rs.getString("price"));
-                }
-            }else if(filters.get("descricao") != null && filters.get("tipo") != null && filters.get("data_hora") != null && filters.get("local") != null && filters.get("localidade") != null){
-                rs = stmt.executeQuery("SELECT * FROM espetaculos WHERE descricao LIKE '%" + filters.get("descricao") + "%' AND tipo LIKE '%" + filters.get("tipo") + "%' AND data_hora LIKE '%" + filters.get("data_hora") + "%' AND local LIKE '%" + filters.get("local") + "%' AND localidade LIKE '%" + filters.get("localidade") + "%'");
-                while (rs.next()) {
-                    shows.add(rs.getString("id") + " " + rs.getString("name") + " " + rs.getString("date") + " " + rs.getString("price"));
-                }
-            }else if(filters.get("descricao") != null && filters.get("tipo") != null && filters.get("data_hora") != null && filters.get("local") != null){
-                rs = stmt.executeQuery("SELECT * FROM espetaculos WHERE descricao LIKE '%" + filters.get("descricao") + "%' AND tipo LIKE '%" + filters.get("tipo") + "%' AND data_hora LIKE '%" + filters.get("data_hora") + "%' AND local LIKE '%" + filters.get("local") + "%'");
-                while (rs.next()) {
-                    shows.add(rs.getString("id") + " " + rs.getString("name") + " " + rs.getString("date") + " " + rs.getString("price"));
-                }
-            }else if(filters.get("descricao") != null && filters.get("tipo") != null && filters.get("data_hora") != null){
-                rs = stmt.executeQuery("SELECT * FROM espetaculos WHERE descricao LIKE '%" + filters.get("descricao") + "%' AND tipo LIKE '%" + filters.get("tipo") + "%' AND data_hora LIKE '%" + filters.get("data_hora") + "%'");
-                while (rs.next()) {
-                    shows.add(rs.getString("id") + " " + rs.getString("name") + " " + rs.getString("date") + " " + rs.getString("price"));
-                }
-            }else if(filters.get("descricao") != null && filters.get("tipo") != null){
-                rs = stmt.executeQuery("SELECT * FROM espetaculos WHERE descricao LIKE '%" + filters.get("descricao") + "%' AND tipo LIKE '%" + filters.get("tipo") + "%'");
-                while (rs.next()) {
-                    shows.add(rs.getString("id") + " " + rs.getString("name") + " " + rs.getString("date") + " " + rs.getString("price"));
-                }
-            }else if(filters.get("descricao") != null){
-                rs = stmt.executeQuery("SELECT * FROM espetaculos WHERE descricao LIKE '%" + filters.get("descricao") + "%'");
-                while (rs.next()) {
-                    shows.add(rs.getString("id") + " " + rs.getString("name") + " " + rs.getString("date") + " " + rs.getString("price"));
-                }
-            }else{
-                rs = stmt.executeQuery("SELECT * FROM espetaculos");
-                while (rs.next()) {
-                    shows.add(rs.getString("id") + " " + rs.getString("name") + " " + rs.getString("date") + " " + rs.getString("price"));
-                }
+            String format = "SELECT * FROM espetaculos WHERE visivel = 1";
+            if(filters.get("descricao") != null){
+                format += " name LIKE '%" + filters.get("descricao") + "%'";
+            }
+            if(filters.get("tipo") != null){
+                format += " tipo LIKE '%" + filters.get("tipo") + "%'";
+            }
+            if(filters.get("data_hora") != null){
+                format += " data_hora LIKE '%" + filters.get("data_hora") + "%'";
+            }
+            if(filters.get("duracao") != null){
+                format += " duracao LIKE '%" + filters.get("duracao") + "%'";
+            }
+            if(filters.get("local") != null){
+                format += " local LIKE '%" + filters.get("local") + "%'";
+            }
+            if(filters.get("localidade") != null){
+                format += " localidade LIKE '%" + filters.get("localidade") + "%'";
+            }
+            if(filters.get("pais") != null){
+                format += " pais LIKE '%" + filters.get("pais") + "%'";
+            }
+            rs = stmt.executeQuery(format);
+            while (rs.next()) {
+                shows.add(rs.getString("id") + " " + rs.getString("name") + " " + rs.getString("date") + " " + rs.getString("price"));
             }
             out.writeObject(shows.toString());
             out.flush();
@@ -294,6 +356,7 @@ public class ThreadCliente extends Thread{
             if(username.equals("admin") && password.equals("admin")){
                 out.writeObject("ADMIN_LOGIN_SUCCESSFUL");
                 out.flush();
+                admin = true;
                 server.incDbVersion(format);
             }else{
                 if(rs.getString("username").equals(username)) {
