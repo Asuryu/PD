@@ -63,7 +63,7 @@ public class ThreadHeartbeat extends Thread {
                 DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
                 server.ms.send(dp);
                 //System.out.println("[ · ] Sending heartbeat to " + server.MULTICAST_IP + ":" + server.MULTICAST_PORT);
-                Thread.sleep(100); // Enviar heartbeat de 10 em 10 segundos
+                Thread.sleep(Servidor.HEARTBEAT_INTERVAL); // Enviar heartbeat de 10 em 10 segundos
             }
         } catch (InterruptedException ie){
             System.out.println("[ - ] Exiting thread ThreadHeartbeat");
@@ -108,15 +108,7 @@ public class ThreadHeartbeat extends Thread {
                         server.onlineServers.sort(new HeartbeatComparatorLoad());
                     }
 
-                    boolean isUpToDate = true;
-                    synchronized (server.onlineServers){
-                        for(Heartbeat h : server.onlineServers){
-                            if (h.getDbVersion() > server.dbVersion) {
-                                isUpToDate = false;
-                                break;
-                            }
-                        }
-                    }
+                    boolean isUpToDate = hb.getDbVersion() <= server.getDbVersion();
                     if (!isUpToDate) {
                         System.out.println("[ ! ] Database is not up to date, updating...");
                         // Server becomes unavailable
@@ -126,7 +118,9 @@ public class ThreadHeartbeat extends Thread {
                         for(Socket s : server.activeConnections){
                             try {
                                 ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-                                oos.writeObject(server.onlineServers);
+                                synchronized (server.onlineServers){
+                                    oos.writeObject(server.onlineServers);
+                                }
                                 oos.flush();
                             } catch (IOException e) {
                                 System.out.println("[ ! ] An error has occurred while sending list of available servers to client");
@@ -149,18 +143,18 @@ public class ThreadHeartbeat extends Thread {
                         DatagramPacket datagramPacket = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
                         server.ms.send(datagramPacket);
 
-//                        // FIXME: pedir ao servidor a base de dados atualizada
-//                        synchronized (server.onlineServers){
-//                            Socket s = new Socket(hb.getIp(), hb.getPort());
-//                            ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-//                            oos.writeObject("GET_DATABASE");
-//                            oos.flush();
-//                            ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
-//                            synchronized (server.dbVersions){
-//                                server.dbVersions = (HashMap<Integer, String>) ois.readObject();
-//                                server.updateDatabase(server.dbVersions);
-//                            }
-//                        }
+                        // FIXME: pedir ao servidor a base de dados atualizada
+
+                        Socket s = new Socket(hb.getIp(), hb.getPort());
+                        ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+                        oos.writeObject("GET_DATABASE");
+                        oos.flush();
+                        ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+                        HashMap<Integer, String> recvDb = (HashMap<Integer, String>) ois.readObject();
+                        server.updateDatabase(recvDb);
+                        server.dbVersion = server.getDbVersion();
+                        server.isAvailable = true;
+                        s.close();
                     }
                 } catch(SocketTimeoutException e) {
                     // System.out.println("[ ! ] Timeout reached");
