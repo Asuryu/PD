@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class ThreadCliente extends Thread{
                     case "SHOWS_LIST_SEARCH" -> {
                         HashMap<String, String> filters = new HashMap<>();
                         for (int i = 1; i < arrayRequest.length; i++) {
-                            String[] filter = arrayRequest[i].split(" ");
+                            String[] filter = arrayRequest[i].split(",");
                             filters.put(filter[0], filter[1]);
                         }
                         shows_list_search(filters);
