@@ -1,7 +1,9 @@
 package Server.Threads;
 
+import Server.Heartbeat;
 import Server.Servidor;
 import java.io.*;
+import java.net.DatagramPacket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.sql.DriverManager;
