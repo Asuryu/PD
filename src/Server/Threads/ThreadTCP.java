@@ -1,7 +1,11 @@
 package Server.Threads;
 
+import Server.Heartbeat;
 import Server.Servidor;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
 import java.net.Socket;
 
 /**
@@ -29,6 +33,16 @@ public class ThreadTCP extends Thread {
                   }
                   ThreadCliente threadCliente = new ThreadCliente(server, client);
                   threadCliente.start();
+
+                  // send heartbeat to multicast
+                  ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+                  ObjectOutputStream out = new ObjectOutputStream(bOut);
+                  server.dbVersion = server.getDbVersion();
+                  Heartbeat hb = new Heartbeat(server.TCP_IP, server.TCP_PORT, server.dbVersion, server.activeConnections.size(), server.isAvailable);
+                  out.writeObject(hb);
+                  out.flush();
+                  DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
+                  server.ms.send(dp);
 
                   // server.sendOnlineServers(); // Send list of online servers to the all clients
 
