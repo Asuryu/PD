@@ -64,6 +64,7 @@ public class Servidor {
         if (!Files.exists(Path.of(DATABASES_PATH + DATABASE_NAME))) { // Não existe uma cópia local da base de dados
             Files.copy(Path.of(DATABASE_ORIGINAL), Path.of(DATABASES_PATH + DATABASE_NAME));
             System.out.println("[ * ] No local copy of the database was found. A copy of the original database was created.");
+            System.out.println(onlineServers);
             if (onlineServers.size() > 0) {
                 Heartbeat hb = onlineServers.stream()
                         .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
