@@ -16,19 +16,7 @@ public class TextUserInterface {
     }
 
 
-    public int[] searchAndConsultMenu() {
-        int options[] = new int[4];
-        int i = 0;
-        System.out.println("Pesquisar espetaculos por: ");
-        System.out.println("1-Nome");
-        System.out.println("2-Localidade");
-        System.out.println("3-Genero");
-        System.out.println("4-Data");
-        System.out.print("Escolha as opçoes com o seguinte formato numero espaço numero: ");
-        options[i] = sc.nextInt();
-        i++;
-        return options;
-    }
+
 
     public int logedMenu() {
         int option;

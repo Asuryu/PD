@@ -1,5 +1,6 @@
 package Client;
 
+import Client.TUI.TextUserInterface;
 import Client.Threads.ThreadAtendeServidor;
 import Client.Threads.ThreadEnviaServidor;
 import Server.Heartbeat;
@@ -7,6 +8,7 @@ import Server.Heartbeat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.*;
 import java.util.ArrayList;
 
@@ -19,15 +21,15 @@ public class Cliente {
     public Boolean isAdmin;
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public ArrayList<Heartbeat> servers = new ArrayList<>();
-    public final int port;
-    public final String ip;
-    public final Socket socket;
+    public int port;
+    public String ip;
+    //public final Socket socket;
     public final ArrayList<Socket> activeConnections = new ArrayList<>(); // List of active connections
 
     public Cliente(String ip, int port) throws Exception {
         this.port = port;
         this.ip = ip;
-        socket = new Socket();
+        //socket = new Socket();
         isLogged = false;
         isReg = false;
         wasEdit = false;
@@ -43,29 +45,34 @@ public class Cliente {
 
                 DatagramPacket datagramPacket = new DatagramPacket(live.getBytes(), live.length());
                 datagramSocket.send(datagramPacket);
-                System.out.println("[ * ] Requesting server list to " + ip + ":" + port);
+                System.out.println("Requesting server list to " + ip + ":" + port);
 
                 // Recebe a lista de servidores disponíveis
+
                 DatagramPacket dp = new DatagramPacket(new byte[4096], 4096);
                 datagramSocket.receive(dp);
                 ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(dp.getData(), 0, dp.getLength()));
                 servers = (ArrayList<Heartbeat>) in.readObject();
                 System.out.println(servers);
                 if (servers.size() == 0) {
-                    System.out.println("[ * ] There are no servers available");
+                    System.out.println("There are no servers available");
                     break;
+                }
+                for (Heartbeat heartbeat : servers) {
+                 //   System.out.println("por conectar");
+                    Socket socket = new Socket(InetAddress.getLocalHost(), heartbeat.getPort());
+                   // System.out.println("conectado");
+                    /*ThreadAtendeServidor threadAtendeServidor = new ThreadAtendeServidor(this,socket);
+                    threads.add(threadAtendeServidor);*/
+                  ThreadEnviaServidor threadEnviaServidor = new ThreadEnviaServidor(this, socket);
+                    threads.add(threadEnviaServidor);
+
                 }
             } catch (Error e) {
                 //Caso ocorra erro a ligar ao servidor ele cancela
-                System.out.println("[ ! ] An error has while receiving the server list");
+                System.out.println("An error has while receiving the server list");
                 System.out.println("      " + e.getMessage());
             }
-
-            ThreadEnviaServidor threadEnviaServidor = new ThreadEnviaServidor(this, servers);
-           // ThreadAtendeServidor threadAtendeServidor = new ThreadAtendeServidor(this,socket);
-
-           // threads.add(threadAtendeServidor);
-            threads.add(threadEnviaServidor);
             for (Thread t : threads) {
                 t.start();
             }
@@ -73,6 +80,13 @@ public class Cliente {
             for (Thread t : threads) {
                 t.join();
             }
+         /*  for (Thread t : threads) {
+                t.start();
+            }
+
+            for (Thread t : threads) {
+                t.join();
+            }*/
 
         }
 

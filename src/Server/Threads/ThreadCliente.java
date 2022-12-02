@@ -61,6 +61,16 @@ public class ThreadCliente extends Thread{
                 synchronized (server.activeConnections) {
                     server.activeConnections.remove(client);
                 }
+                
+                // send heartbeat to multicast
+                ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+                ObjectOutputStream out = new ObjectOutputStream(bOut);
+                server.dbVersion = server.getDbVersion();
+                Heartbeat hb = new Heartbeat(server.TCP_IP, server.TCP_PORT, server.dbVersion, server.activeConnections.size(), server.isAvailable);
+                out.writeObject(hb);
+                out.flush();
+                DatagramPacket dp = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
+                server.ms.send(dp);
             }
         }
         catch (SocketException e){

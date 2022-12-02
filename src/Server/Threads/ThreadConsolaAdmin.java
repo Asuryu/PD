@@ -1,4 +1,6 @@
-package Server;
+package Server.Threads;
+
+import Server.Servidor;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -46,11 +48,11 @@ public class ThreadConsolaAdmin extends Thread {
                     String format = "INSERT INTO utilizador (nome, username, password) VALUES ('" + nome + "', '" + username + "', '" + password + "')";
                     try {
                         stmt.executeUpdate(format);
+                        System.out.println("User inserted successfully!");
+                        server.incDbVersion(format);
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    System.out.println("User inserted successfully!");
-                    server.incDbVersion(format);
                 }
                 default -> {
                     System.out.println("[ ! ] Command '" + command + "' not recognized");

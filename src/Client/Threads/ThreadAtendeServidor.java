@@ -13,7 +13,7 @@ import java.util.HashMap;
 public class ThreadAtendeServidor extends Thread {
     private final Cliente c;
     private final Socket s;
-    private ObjectInputStream objectInputStream;
+    private  ObjectInputStream objectInputStream;
 
     public ThreadAtendeServidor(Cliente c, Socket s) {
         this.c = c;
@@ -23,15 +23,17 @@ public class ThreadAtendeServidor extends Thread {
     @Override
     public void run() {
         try {
-          //  c.datagramSocket = new DatagramSocket(c.port);
-            objectInputStream = new ObjectInputStream(c.socket.getInputStream());
-            ArrayList<String> p = (ArrayList<String>) objectInputStream.readObject();
-            ArrayList<String> pP = (ArrayList<String>) objectInputStream.readObject();
-            ArrayList<String> cS = (ArrayList<String>) objectInputStream.readObject();
-            ArrayList<String> sS = (ArrayList<String>) objectInputStream.readObject();
-            ArrayList<String> sp = (ArrayList<String>) objectInputStream.readObject();
-            HashMap<String, String> filters = new HashMap<>();
-            String request = (String) objectInputStream.readObject();
+
+          //  ArrayList<String> p = (ArrayList<String>) objectInputStream.readObject();
+          //  ArrayList<String> pP = (ArrayList<String>) objectInputStream.readObject();
+          //  ArrayList<String> cS = (ArrayList<String>) objectInputStream.readObject();
+         //   ArrayList<String> sS = (ArrayList<String>) objectInputStream.readObject();
+         //   ArrayList<String> sp = (ArrayList<String>) objectInputStream.readObject();
+         //   HashMap<String, String> filters = new HashMap<>();
+            objectInputStream = new ObjectInputStream(s.getInputStream());
+            System.out.println("antes read");
+            String request = (String)objectInputStream.readObject();
+            System.out.println("after read");
             String[] arrayRequest = request.split(" ");
             switch (arrayRequest[0].toUpperCase()) {
                 case "REGISTER_SUCCESSFUL" -> register();
@@ -44,14 +46,14 @@ public class ThreadAtendeServidor extends Thread {
                 case "USER_NOT_FOUND" -> userNotFound();
                 case "ERROR_OCCURED" -> erro();
 
-                case "AWAITING_PAYEMENT" -> awaitingPayementList(p);
-                case "PAYEMENT_CONFIRMED" -> payementConfirmedList(pP);
+           //     case "AWAITING_PAYEMENT" -> awaitingPayementList(p);
+           //     case "PAYEMENT_CONFIRMED" -> payementConfirmedList(pP);
 
-                case "SHOWS_LIST_SEARCH" -> showListSearch(cS);
+           //     case "SHOWS_LIST_SEARCH" -> showListSearch(cS);
 
-                case "SELECT_SHOW" -> seeInfoAboutShow(sS);
+          //      case "SELECT_SHOW" -> seeInfoAboutShow(sS);
 
-                case "AVAILABLE_SEATS_AND_PRICE" -> availableSeatsAndPrice(sp);
+            //1    case "AVAILABLE_SEATS_AND_PRICE" -> availableSeatsAndPrice(sp);
 //ultimo
                 case "SEAT_RESERVATION_SUCCESSFUL" -> selectSeatSucess();
                 case "SEAT_ALREADY_RESERVED" -> selectSeatAlreadyReserved();

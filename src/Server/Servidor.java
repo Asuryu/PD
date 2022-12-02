@@ -1,7 +1,6 @@
 package Server;
 
 import Server.Comparators.HeartbeatComparatorLoad;
-import Server.ThreadConsolaAdmin;
 import Server.Threads.*;
 
 import java.io.*;
@@ -68,6 +67,7 @@ public class Servidor {
         if (!Files.exists(Path.of(DATABASES_PATH + DATABASE_NAME))) { // Não existe uma cópia local da base de dados
             Files.copy(Path.of(DATABASE_ORIGINAL), Path.of(DATABASES_PATH + DATABASE_NAME));
             System.out.println("[ * ] No local copy of the database was found. A copy of the original database was created.");
+            System.out.println(onlineServers);
             if (onlineServers.size() > 0) {
                 Heartbeat hb = onlineServers.stream()
                         .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
@@ -226,7 +226,11 @@ public class Servidor {
         dbConn = DriverManager.getConnection(JDBC_STRING);
         Statement stmt = dbConn.createStatement();
         for (Map.Entry<Integer, String> entry : dbVersions.entrySet()) {
-            stmt.executeUpdate(entry.getValue());
+            try {
+                stmt.executeUpdate(entry.getValue());
+            } catch (SQLException e) {
+                System.out.println("[ ! ] Error updating database: " + e.getMessage());
+            }
         }
         int lastKey = 0;
         for (Integer key : dbVersions.keySet()) {
