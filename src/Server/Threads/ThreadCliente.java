@@ -63,15 +63,13 @@ public class ThreadCliente extends Thread{
             }
         }
         catch (SocketException e){
-            System.out.println("[ ! ] Client " + client.getInetAddress().getHostAddress() + ":" + client.getPort() + " has disconnected");
             try {
                 server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
                 Statement stmt = server.dbConn.createStatement();
                 stmt.executeQuery("UPDATE utilizador SET autenticado = 0 WHERE id = '" + clientID + "'");
+                System.out.println("[ ! ] Client " + client.getInetAddress().getHostAddress() + ":" + client.getPort() + " has disconnected");
                 admin = false;
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
+            } catch (SQLException ignored) {}
 
         }
         catch (IOException | ClassNotFoundException | SQLException e){
