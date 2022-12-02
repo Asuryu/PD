@@ -65,7 +65,12 @@ public class Cliente {
                     /*ThreadAtendeServidor threadAtendeServidor = new ThreadAtendeServidor(this,socket);
                     threads.add(threadAtendeServidor);*/
                   ThreadEnviaServidor threadEnviaServidor = new ThreadEnviaServidor(this, socket);
-                    threads.add(threadEnviaServidor);
+                    //threads.add(threadEnviaServidor);
+                    threadEnviaServidor.start();
+                    threadEnviaServidor.join();
+                    ThreadAtendeServidor threadAtendeServidor = new ThreadAtendeServidor(this,socket);
+                    threadAtendeServidor.start();
+                    threadAtendeServidor.join();
 
                 }
             } catch (Error e) {
@@ -73,13 +78,13 @@ public class Cliente {
                 System.out.println("An error has while receiving the server list");
                 System.out.println("      " + e.getMessage());
             }
-            for (Thread t : threads) {
+           /* for (Thread t : threads) {
                 t.start();
             }
 
             for (Thread t : threads) {
                 t.join();
-            }
+            }*/
          /*  for (Thread t : threads) {
                 t.start();
             }
