@@ -46,9 +46,10 @@ public class ThreadCliente extends Thread{
                     case "AWAITING_PAYMENT_CONFIRMATION" -> listPayments("AWAITING_PAYMENT_CONFIRMATION");
                     case "PAYMENT_CONFIRMED" -> listPayments("PAYMENT_CONFIRMED");
                     case "SHOWS_LIST_SEARCH" -> {
+                        System.out.println("Received: " + Arrays.toString(arrayRequest)); // DEBUG
                         HashMap<String, String> filters = new HashMap<>();
                         for (int i = 1; i < arrayRequest.length; i++) {
-                            String[] filter = arrayRequest[i].split(",");
+                            String[] filter = arrayRequest[i].split(" ");
                             filters.put(filter[0], filter[1]);
                         }
                         shows_list_search(filters);

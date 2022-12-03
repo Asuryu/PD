@@ -123,9 +123,20 @@ public class ThreadEnvia extends Thread {
 
                                         break;
                                     case 4:
-                                        //TODO: MUST SEND A HASHMAP
                                         System.out.print("******ADMIN******\n---- Consultar e pesquisa de espetaculos ----\n");
-
+                                        String[] sendingSTRSEARCH = new String[5];
+                                        sendingSTRSEARCH[0] = "SHOWS_LIST_SEARCH";
+                                        // Filters to search
+                                        System.out.print("Nome do espetaculo: ");
+                                        sendingSTRSEARCH[1] = "nome " + sc.nextLine();
+                                        System.out.print("Tipo de espetaculo: ");
+                                        sendingSTRSEARCH[2] = "tipo " + sc.nextLine();
+                                        System.out.print("Data do espetaculo: ");
+                                        sendingSTRSEARCH[3] = "data_hora " + sc.nextLine();
+                                        System.out.print("Localidade do espetaculo: ");
+                                        sendingSTRSEARCH[4] = "localidade " + sc.nextLine();
+                                        oos.writeObject(sendingSTRSEARCH);
+                                        oos.flush();
                                         break;
                                     case 5:
                                         System.out.print("******ADMIN******\n---- Selecionar Espetaculo ----\n");
