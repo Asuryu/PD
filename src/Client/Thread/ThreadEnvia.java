@@ -3,6 +3,7 @@ package Client.Thread;
 import Client.Clientev2;
 import Client.TextUserInterface.TUI;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -127,7 +128,6 @@ public class ThreadEnvia extends Thread {
 
                                             break;
                                         case 4:
-
                                             System.out.print("******ADMIN******\n---- Consultar e pesquisa de espetaculos ----\n");
                                            /* String[] f = new String[2];
                                             String[] fil = tui.menuFiltros();
@@ -176,9 +176,14 @@ public class ThreadEnvia extends Thread {
                                             break;
                                         case 6:
                                             System.out.print("******ADMIN******\n---- Lugares e Precos ----\n");
-                                            String[] placesAndPricesSTR = new String[1];
+                                            String[] placesAndPricesSTR = new String[2];
                                             placesAndPricesSTR[0] = "AVAILABLE_SEATS_AND_PRICE";
-                                            System.out.print("Dos lugares disponiveis digite os pre");
+                                            placesAndPricesSTR[1] = " ";
+                                            do {
+                                                System.out.print("Dos lugares disponiveis digite os que pretende:");
+                                                placesAndPricesSTR[1] += sc.nextLine();
+                                            }while(placesAndPricesSTR[1] == "\n");
+                                            System.out.println(placesAndPricesSTR[1]);
                                             String r8 = (String) ois.readObject();
                                             switch (r8) {
                                                 case "ERROR_OCCURED":
@@ -258,7 +263,7 @@ public class ThreadEnvia extends Thread {
                         System.exit(0);
                 }
             }
-        } catch (SocketException e) {
+        } catch (SocketException | EOFException e) {
             System.out.println("[ ! ] The server has closed the connection");
         } catch (Exception e) {
             System.out.println("[ ! ] An error has occurred while sending a message");
