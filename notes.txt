@@ -16,6 +16,7 @@ List Payments [Awaiting payment / Payment confirmed] output Server-Client:
     - If payments.size() == 0, then no payments found
     - ERROR_OCCURED || Error occured, for more information check server output
 
+
 Show List Search output Server-Client:
     [!] Send HashMap<String, String> filters = new HashMap<>();
     [!] Receive ArrayList<String> shows = new ArrayList<>();
