@@ -37,6 +37,7 @@ public class ThreadCliente extends Thread{
             in = new ObjectInputStream(client.getInputStream());
             while (!isInterrupted()){
                 String[] arrayRequest = (String[])in.readObject();
+                System.out.println("Received: " + Arrays.toString(arrayRequest));
                 switch (arrayRequest[0].toUpperCase()) {
                     case "GET_DATABASE" -> getDatabase();
                     case "REGISTER" -> register(arrayRequest[1], arrayRequest[2], arrayRequest[3]);
@@ -104,7 +105,9 @@ public class ThreadCliente extends Thread{
             if(admin){
                 server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
                 Statement stmt = server.dbConn.createStatement();
-                stmt.executeQuery("DELETE FROM espetaculo WHERE id = '" + showID + "'");
+                String format = "DELETE FROM espetaculo WHERE id = '" + showID + "'";
+                stmt.executeUpdate(format);
+                server.incDbVersion(format);
                 out.writeObject("SHOW_REMOVED_SUCCESSFULLY");
             }
         } catch (SQLException | IOException e) {
@@ -119,7 +122,9 @@ public class ThreadCliente extends Thread{
                 String[] arrayData = data.split(",");
                 server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
                 Statement stmt = server.dbConn.createStatement();
-                stmt.executeQuery("INSERT INTO espetaculo (nome, data, preco, lotacao, lotacao_maxima) VALUES ('" + arrayData[0] + "', '" + arrayData[1] + "', '" + arrayData[2] + "', '" + arrayData[3] + "', '" + arrayData[4] + "')");
+                String format = "INSERT INTO espetaculo (nome, data, preco, lotacao, lotacao_maxima) VALUES ('" + arrayData[0] + "', '" + arrayData[1] + "', '" + arrayData[2] + "', '" + arrayData[3] + "', '" + arrayData[4] + "')";
+                stmt.executeUpdate(format);
+                server.incDbVersion(format);
                 out.writeObject("SHOW_INSERTED_SUCCESSFULLY");
             }
         }catch (SQLException | IOException e) {
@@ -135,6 +140,7 @@ public class ThreadCliente extends Thread{
             Statement stmt = server.dbConn.createStatement();
             String format = ("UPDATE reserva SET pago = 1 WHERE id = '" + reservationID + "' AND id_utilizador = '"+clientID+"'");
             stmt.executeUpdate(format);
+            server.incDbVersion(format);
             out.writeObject("PAYMENT_CONFIRMED");
         }catch (SQLException e){
             out.writeObject("ERROR_OCCURED");
@@ -322,10 +328,11 @@ public class ThreadCliente extends Thread{
         try{
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE username='"+username+"'");
+            ResultSet rs = stmt.executeQuery("SELECT * FROM utilizador WHERE username='"+username+"'");
             try{
                 if(rs.next()){
-                    String format = "UPDATE users SET name='%s', username = '%s', password='%s' WHERE username='%s', name, username, password, username";
+                    String format = "UPDATE utilizador SET nome='%s', username = '%s', password='%s' WHERE username='%s'";
+                    format = String.format(format, name, username, password, username);
                     stmt.executeUpdate(format);
                     out.writeObject("UPDATE_SUCCESSFUL");
                     out.flush();
@@ -396,7 +403,8 @@ public class ThreadCliente extends Thread{
         try {
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT username FROM utilizador WHERE username='" + username + "'");
+            ResultSet rs = stmt.executeQuery("SELECT id, username FROM utilizador WHERE username='" + username + "'");
+            clientID = rs.getInt("id");
             if (rs.next()) {
                 System.out.println("[ ! ] User already exists");
                 out.writeObject("USER_ALREADY_EXISTS");
@@ -407,19 +415,15 @@ public class ThreadCliente extends Thread{
                 System.out.println("[ * ] User registered");
                 out.writeObject("REGISTER_SUCCESSFUL");
                 out.flush();
-                server.incDbVersion(format);
-                stmt.executeQuery("UPDATE utilizador SET autenticado = 1 WHERE username = '" + username + "'");
-                server.incDbVersion(format);
-                ResultSet rs2 = stmt.executeQuery("SELECT id FROM utilizador WHERE username = '" + username + "'");
-                rs2.next();
-                clientID = rs2.getInt("id");
-                rs2.close();
+                String updateQuery = "UPDATE utilizador SET autenticado = 1 WHERE username = '" + username + "'";
+                stmt.executeUpdate(updateQuery);
+                server.incDbVersion(updateQuery);
             }
             rs.close();
             out.writeObject("REGISTER_SUCCESSFUL");
             out.flush();
         } catch (IOException | SQLException e) {
-            System.out.println("[ * ] Username already exists");
+            e.printStackTrace();
             out.writeObject("REGISTER_FAILED");
             out.flush();
             System.out.println("[ ! ] An error has occurred while editing profile");

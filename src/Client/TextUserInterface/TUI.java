@@ -14,24 +14,28 @@ public class TUI {
         exit = false;
     }
 
+    public int logedMenuAdmin() {
+        int option;
+        System.out.println("1 - Editar dados dos prefil");
+        System.out.println("2 - Consultar reservas ainda nao pagas");
+        System.out.println("3 - Consultar reservas pagas");
+        System.out.println("4 - Consultar e pesquisa de espetaculos");
+        System.out.println("5 - Selecionar espetaculo");
+        System.out.println("6 - Ver lugar disponiveis e respectivos precos");
+        System.out.println("7 - Selecionar lugares pretendidos");
+        System.out.println("8 - Validar reserva");
+        System.out.println("9 - Remover reserva");
+        System.out.println("10 - Pagar");
+        do {
+            System.out.print("Escolha uma opcao: ");
+            option = sc.nextInt();
+        } while (option < 1 || option > 11);
+        return option;
+
+    }
     public int logedMenu() {
         int option;
-        /*if (!c.isAdmin){
-            System.out.println("1 - Editar dados dos prefil");
-            System.out.println("2 - Consultar reservas ainda não pagas");
-            System.out.println("3 - Consultar reservas pagas");
-            System.out.println("4 - Consultar e pesquisa de espetaculos");
-            System.out.println("5 - Selecionar espetaculo");
-            System.out.println("6 - Ver lugar disponiveis e respectivos precos");
-            System.out.println("7 - Selecionar lugares pretendidos");
-            System.out.println("8 - Validar reserva");
-            System.out.println("9 - Remover reserva");
-            System.out.println("10 - Pagar");
-            do {
-                System.out.print("Escolha uma opcao: ");
-                option = sc.nextInt();
-            } while (option < 1 || option > 11);
-        }else{*/
+
             System.out.println("1 - Editar dados dos prefil");
             System.out.println("2 - Consultar reservas ainda não pagas");
             System.out.println("3 - Consultar reservas pagas");
