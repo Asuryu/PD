@@ -299,21 +299,23 @@ public class ThreadCliente extends Thread{
             ArrayList<String> payments = new ArrayList<>();
             ResultSet rs;
             if(whatToList.equals("AWAITING_PAYMENT_CONFIRMATION")){
+                out.writeObject("AWAITING_PAYMENT_CONFIRMATION");
                 rs = stmt.executeQuery("SELECT * FROM reserva WHERE pago = 0 AND id_utilizador = " + clientID);
                 while(rs.next()){
                     String payment = rs.getString("payment_id") + " " + rs.getString("payment_amount") + " " + rs.getString("payment_date") + " " + rs.getString("payment_confirmed");
                     payments.add(payment);
-                    out.writeObject(payment);
-                    out.flush();
                 }
+                out.writeObject(payments);
+                out.flush();
             }else if(whatToList.equals("PAYMENT_CONFIRMED")){
+                out.writeObject("PAYMENT_CONFIRMED");
                 rs = stmt.executeQuery("SELECT * FROM reserva WHERE pago = 1 AND id_utilizador = " + clientID);
                 while(rs.next()){
                     String payment = rs.getString("payment_id") + " " + rs.getString("payment_amount") + " " + rs.getString("payment_date") + " " + rs.getString("payment_confirmed");
                     payments.add(payment);
-                    out.writeObject(payment);
-                    out.flush();
                 }
+                out.writeObject(payments);
+                out.flush();
             }
         }catch (IOException | SQLException e) {
             out.writeObject("ERROR_OCCURED");
