@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ThreadEnvia extends Thread {
@@ -55,7 +56,7 @@ public class ThreadEnvia extends Thread {
                                         System.out.print("******ADMIN******\n---- ALTERAR DADOS ----\n");
                                         sendingSTREDITADMIN[0] = "EDIT_PROFILE";
                                         System.out.print("Name:");
-                                        sendingSTREDITADMIN[1] = sc.nextLine();;
+                                        sendingSTREDITADMIN[1] = sc.nextLine();
                                         System.out.print("Username: ");
                                         sendingSTREDITADMIN[2] = sc.nextLine();
                                         System.out.print("Password: ");
@@ -74,6 +75,21 @@ public class ThreadEnvia extends Thread {
                                                 System.out.println("Unknown response");
                                                 break;
                                         }
+                                        break;
+                                    case 2:
+                                        System.out.print("******ADMIN******\n---- Lista de pagamento ----\n");
+                                        oos.writeObject("AWAITING_PAYMENT_CONFIRMATION");
+                                        oos.flush();
+                                        ArrayList response4 = (ArrayList)ois.readObject();
+                                        if (response4.size()==0)
+                                            System.out.print("Tudo pago!!! Pessoa eficaz");
+                                        else{
+                                            System.out.print("Ainda tem por pagar:");
+                                            System.out.println(response4);
+                                        }
+
+                                        break;
+
                                 }
                                 break;
                             case "LOGIN_FAILED":
@@ -81,7 +97,6 @@ public class ThreadEnvia extends Thread {
                                 break;
                             case "LOGIN_SUCCESSFUL":
                                 System.out.println("Login successful");
-
                                 break;
                             default:
                                 System.out.println("Unknown response");
