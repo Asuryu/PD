@@ -78,7 +78,9 @@ public class ThreadEnvia extends Thread {
                                         break;
                                     case 2:
                                         System.out.print("******ADMIN******\n---- Lista de pagamento ----\n");
-                                        oos.writeObject("AWAITING_PAYMENT_CONFIRMATION");
+                                        String[] payments = new String[1];
+                                        payments[0] = "AWAITING_PAYMENT_CONFIRMATION";
+                                        oos.writeObject(payments);
                                         oos.flush();
                                         String r4 = (String) ois.readObject();
                                         switch (r4) {
@@ -98,7 +100,9 @@ public class ThreadEnvia extends Thread {
                                         break;
                                     case 3:
                                         System.out.print("******ADMIN******\n---- Reservas Pagas ----\n");
-                                        oos.writeObject("PAYMENT_CONFIRMED");
+                                        String[] paymentsP = new String[1];
+                                        paymentsP[0] = "PAYMENT_CONFIRMED";
+                                        oos.writeObject(paymentsP);
                                         oos.flush();
                                         String r5 = (String) ois.readObject();
                                         switch (r5) {
@@ -124,7 +128,9 @@ public class ThreadEnvia extends Thread {
                                         break;
                                     case 5:
                                         System.out.print("******ADMIN******\n---- Selecionar Espetaculo ----\n");
-                                        oos.writeObject("SELECT_SHOW");
+                                        String[] s = new String[1];
+                                        s[0] = "PAYMENT_CONFIRMED";
+                                        oos.writeObject(s);
                                         oos.flush();
                                         String r7 = (String) ois.readObject();
                                         switch (r7) {
@@ -140,7 +146,6 @@ public class ThreadEnvia extends Thread {
                                                 }
                                                 break;
                                         }
-
                                         break;
 
 
