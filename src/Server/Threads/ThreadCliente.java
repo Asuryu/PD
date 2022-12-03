@@ -302,7 +302,11 @@ public class ThreadCliente extends Thread{
                 out.writeObject("AWAITING_PAYMENT_CONFIRMATION");
                 rs = stmt.executeQuery("SELECT * FROM reserva WHERE pago = 0 AND id_utilizador = " + clientID);
                 while(rs.next()){
-                    String payment = rs.getString("payment_id") + " " + rs.getString("payment_amount") + " " + rs.getString("payment_date") + " " + rs.getString("payment_confirmed");
+                    ResultSet rs2 = stmt.executeQuery("SELECT * FROM espetaculos WHERE id = " + rs.getString("id_espetaculo"));
+                    rs2.next();
+                    ResultSet rs3 = stmt.executeQuery("SELECT * FROM lugar WHERE id_espetaculo = " + rs2.getString("id"));
+                    rs3.next();
+                    String payment = "Reservation ID: " + rs.getString("id") + " | Show: " + rs2.getString("name") + " | Date: " + rs2.getString("date") + " | Price: " + rs3.getString("price");
                     payments.add(payment);
                 }
                 out.writeObject(payments);
@@ -311,7 +315,7 @@ public class ThreadCliente extends Thread{
                 out.writeObject("PAYMENT_CONFIRMED");
                 rs = stmt.executeQuery("SELECT * FROM reserva WHERE pago = 1 AND id_utilizador = " + clientID);
                 while(rs.next()){
-                    String payment = rs.getString("payment_id") + " " + rs.getString("payment_amount") + " " + rs.getString("payment_date") + " " + rs.getString("payment_confirmed");
+                    String payment = "Reservation ID: " + rs.getString("id") + " | Show: " + rs.getString("id_espetaculo") + " | Date: " + rs.getString("data_hora") + " | Price: " + rs.getString("preco");
                     payments.add(payment);
                 }
                 out.writeObject(payments);
