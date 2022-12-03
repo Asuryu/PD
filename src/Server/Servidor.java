@@ -34,8 +34,8 @@ public class Servidor {
     public SocketAddress sa; // Socket address
     public NetworkInterface ni; // Network interface
 
-    public static final int INITIAL_HEARTBEAT_WAIT = 30 * 1000; // Time to wait for heartbeats in the beginning of the server (in milliseconds)
-    public static final int HEARTBEAT_INTERVAL = 10 * 1000; // Interval between heartbeats (in milliseconds)
+    public static final int INITIAL_HEARTBEAT_WAIT = 2 * 1000; // Time to wait for heartbeats in the beginning of the server (in milliseconds)
+    public static final int HEARTBEAT_INTERVAL = 200; // Interval between heartbeats (in milliseconds)
 
     public Boolean isAvailable = true; // Flag to indicate if the server is available to receive connections
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads

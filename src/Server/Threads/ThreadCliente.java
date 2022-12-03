@@ -33,11 +33,10 @@ public class ThreadCliente extends Thread{
     @Override
     public void run(){
         try{
+            out = new ObjectOutputStream(client.getOutputStream());
+            in = new ObjectInputStream(client.getInputStream());
             while (!isInterrupted()){
-                out = new ObjectOutputStream(client.getOutputStream());
-                in = new ObjectInputStream(client.getInputStream());
-                String request = (String)in.readObject();
-                String[] arrayRequest = request.split(" ");
+                String[] arrayRequest = (String[])in.readObject();
                 switch (arrayRequest[0].toUpperCase()) {
                     case "GET_DATABASE" -> getDatabase();
                     case "REGISTER" -> register(arrayRequest[1], arrayRequest[2], arrayRequest[3]);
@@ -75,7 +74,7 @@ public class ThreadCliente extends Thread{
                 server.ms.send(dp);
             }
         }
-        catch (SocketException e){
+        catch (SocketException | EOFException e){
             try {
                 server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
                 Statement stmt = server.dbConn.createStatement();
@@ -353,41 +352,32 @@ public class ThreadCliente extends Thread{
         try {
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
-            String format = "SELECT username FROM utilizador";
-            ResultSet rs = stmt.executeQuery(format);
-            rs.next();
-            if(username.equals("admin") && password.equals("admin")){
-                out.writeObject("ADMIN_LOGIN_SUCCESSFUL");
-                out.flush();
-                admin = true;
-                server.incDbVersion(format);
-            }else{
-                if(rs.getString("username").equals(username)) {
-                    format = "SELECT password FROM utilizador";
-                    rs = stmt.executeQuery(format);
-                    if(rs.getString("password").equals(password)) {
-                        // TODO: Update database for the user "autenticado" field
-                        out.writeObject("LOGIN_SUCCESSFUL");
-                        out.flush();
-                        stmt.executeQuery("UPDATE utilizador SET autenticado = 1 WHERE username = '" + username + "'");
-                        server.incDbVersion(format);
-                        ResultSet rs2 = stmt.executeQuery("SELECT id FROM utilizador WHERE username = '" + username + "'");
-                        rs2.next();
-                        clientID = rs2.getInt("id");
-                    }
+            String format = "SELECT id, username FROM utilizador WHERE username='%s' AND password='%s'";
+            ResultSet rs = stmt.executeQuery(String.format(format, username, password));
+            clientID = rs.getInt("id");
+            if(rs.next()){
+                ResultSet rs2 = stmt.executeQuery("SELECT username FROM utilizador WHERE administrador = 1 AND username = '" + username + "'");
+                if(rs2.next()){
+                    out.writeObject("ADMIN_LOGIN_SUCCESSFUL");
+                    out.flush();
                 }else{
-                    out.writeObject("LOGIN_FAILED");
+                    out.writeObject("LOGIN_SUCCESSFUL");
                     out.flush();
                 }
+                // Check if user is an admin and puts admin boolean to true
+                String updateQuery = "UPDATE utilizador SET autenticado = 1 WHERE username = '" + username + "'";
+                stmt.executeUpdate(updateQuery);
+                server.incDbVersion(updateQuery);
+            }else{
+                out.writeObject("LOGIN_FAILED");
+                out.flush();
             }
-            rs.close();
-            stmt.close();
-
         } catch (SQLException | IOException e) {
             out.writeObject("LOGIN_FAILED");
             out.flush();
-            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("[ ! ] An error has occurred while logging in user");
             System.out.println("      " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -406,18 +396,28 @@ public class ThreadCliente extends Thread{
         try {
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT username FROM utilizador");
-            rs.next();
-            String format = "INSERT INTO utilizador (nome, username, password) VALUES ('" + nome + "', '" + username + "', '" + password + "')";
-            stmt.executeUpdate(format);
-            System.out.println("[ * ] User registered");
+            ResultSet rs = stmt.executeQuery("SELECT username FROM utilizador WHERE username='" + username + "'");
+            if (rs.next()) {
+                System.out.println("[ ! ] User already exists");
+                out.writeObject("USER_ALREADY_EXISTS");
+                out.flush();
+            } else {
+                String format = "INSERT INTO utilizador (nome, username, password) VALUES ('%s', '%s', '%s')";
+                stmt.executeUpdate(String.format(format, nome, username, password));
+                System.out.println("[ * ] User registered");
+                out.writeObject("REGISTER_SUCCESSFUL");
+                out.flush();
+                server.incDbVersion(format);
+                stmt.executeQuery("UPDATE utilizador SET autenticado = 1 WHERE username = '" + username + "'");
+                server.incDbVersion(format);
+                ResultSet rs2 = stmt.executeQuery("SELECT id FROM utilizador WHERE username = '" + username + "'");
+                rs2.next();
+                clientID = rs2.getInt("id");
+                rs2.close();
+            }
+            rs.close();
             out.writeObject("REGISTER_SUCCESSFUL");
             out.flush();
-            stmt.executeQuery("UPDATE utilizador SET autenticado = 1 WHERE username = '" + username + "'");
-            server.incDbVersion(format);
-            ResultSet rs3 = stmt.executeQuery("SELECT id FROM utilizador WHERE username = '" + username + "'");
-            rs3.next();
-            clientID = rs3.getInt("id");
         } catch (IOException | SQLException e) {
             System.out.println("[ * ] Username already exists");
             out.writeObject("REGISTER_FAILED");
