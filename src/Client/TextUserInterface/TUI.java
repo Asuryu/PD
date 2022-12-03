@@ -17,7 +17,7 @@ public class TUI {
     public int logedMenuAdmin() {
         int option;
         System.out.println("1 - Editar dados dos prefil");
-        System.out.println("2 - Consultar reservas ainda não pagas");
+        System.out.println("2 - Consultar reservas ainda nao pagas");
         System.out.println("3 - Consultar reservas pagas");
         System.out.println("4 - Consultar e pesquisa de espetaculos");
         System.out.println("5 - Selecionar espetaculo");

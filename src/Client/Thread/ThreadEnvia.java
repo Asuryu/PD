@@ -117,6 +117,31 @@ public class ThreadEnvia extends Thread {
                                         }
 
                                         break;
+                                    case 4:
+                                        //TODO: MUST SEND A HASHMAP
+                                        System.out.print("******ADMIN******\n---- Consultar e pesquisa de espetaculos ----\n");
+
+                                        break;
+                                    case 5:
+                                        System.out.print("******ADMIN******\n---- Selecionar Espetaculo ----\n");
+                                        oos.writeObject("SELECT_SHOW");
+                                        oos.flush();
+                                        String r7 = (String) ois.readObject();
+                                        switch (r7) {
+                                            case "ERROR_OCCURED":
+                                                System.out.println("Unknown response");
+                                                break;
+                                            default:
+                                                ArrayList response7 = (ArrayList)ois.readObject();
+                                                if (response7.size()==0)
+                                                    System.out.print("Nao foram encontrados espetaculos:\n");
+                                                else{
+                                                    System.out.println(response7);
+                                                }
+                                                break;
+                                        }
+
+                                        break;
 
 
                                 }
