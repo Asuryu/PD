@@ -1,12 +1,9 @@
 package Client.TextUserInterface;
 
-import Client.Client;
-
 import java.util.Scanner;
 
 public class TUI {
     private Scanner sc;
-    public Client c;
     private boolean exit;
 
     public TUI() {
