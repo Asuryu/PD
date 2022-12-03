@@ -80,15 +80,44 @@ public class ThreadEnvia extends Thread {
                                         System.out.print("******ADMIN******\n---- Lista de pagamento ----\n");
                                         oos.writeObject("AWAITING_PAYMENT_CONFIRMATION");
                                         oos.flush();
-                                        ArrayList response4 = (ArrayList)ois.readObject();
-                                        if (response4.size()==0)
-                                            System.out.print("Tudo pago!!! Pessoa eficaz");
-                                        else{
-                                            System.out.print("Ainda tem por pagar:");
-                                            System.out.println(response4);
+                                        String r4 = (String) ois.readObject();
+                                        switch (r4) {
+                                            case "ERROR_OCCURED":
+                                                System.out.println("Unknown response");
+                                                break;
+                                            default:
+                                                ArrayList response4 = (ArrayList) ois.readObject();
+                                                if (response4.size() == 0)
+                                                    System.out.print("Tudo pago!!! Pessoa eficaz");
+                                                else {
+                                                    System.out.print("Ainda tem por pagar:");
+                                                    System.out.println(response4);
+                                                }
+                                                break;
+                                        }
+                                        break;
+                                    case 3:
+                                        System.out.print("******ADMIN******\n---- Reservas Pagas ----\n");
+                                        oos.writeObject("PAYMENT_CONFIRMED");
+                                        oos.flush();
+                                        String r5 = (String) ois.readObject();
+                                        switch (r5) {
+                                            case "ERROR_OCCURED":
+                                                System.out.println("Unknown response");
+                                                break;
+                                            default:
+                                                ArrayList response5 = (ArrayList)ois.readObject();
+                                                if (response5.size()==0)
+                                                    System.out.print("Historico de reservas:\nVazio");
+                                                else{
+                                                    System.out.print("Historico de reservas pagas:");
+                                                    System.out.println(response5);
+                                                }
+                                                break;
                                         }
 
                                         break;
+
 
                                 }
                                 break;
