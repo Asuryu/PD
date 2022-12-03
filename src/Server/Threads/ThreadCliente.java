@@ -404,6 +404,7 @@ public class ThreadCliente extends Thread{
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT id, username FROM utilizador WHERE username='" + username + "'");
+            clientID = rs.getInt("id");
             if (rs.next()) {
                 System.out.println("[ ! ] User already exists");
                 out.writeObject("USER_ALREADY_EXISTS");
@@ -417,7 +418,6 @@ public class ThreadCliente extends Thread{
                 String updateQuery = "UPDATE utilizador SET autenticado = 1 WHERE username = '" + username + "'";
                 stmt.executeUpdate(updateQuery);
                 server.incDbVersion(updateQuery);
-                clientID = rs.getInt("id");
             }
             rs.close();
             out.writeObject("REGISTER_SUCCESSFUL");
