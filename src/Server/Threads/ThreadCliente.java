@@ -37,7 +37,7 @@ public class ThreadCliente extends Thread{
             in = new ObjectInputStream(client.getInputStream());
             while (!isInterrupted()){
                 String[] arrayRequest = (String[])in.readObject();
-                System.out.println("Received: " + Arrays.toString(arrayRequest));
+                //System.out.println("Received: " + Arrays.toString(arrayRequest)); // DEBUG
                 switch (arrayRequest[0].toUpperCase()) {
                     case "GET_DATABASE" -> getDatabase();
                     case "REGISTER" -> register(arrayRequest[1], arrayRequest[2], arrayRequest[3]);
