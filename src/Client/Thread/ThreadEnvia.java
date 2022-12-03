@@ -1,14 +1,13 @@
-package Client.Threads;
+package Client.Thread;
 
 import Client.Clientev2;
-import Client.TUI.TextUserInterface;
+import Client.TextUserInterface.TUI;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ThreadEnvia extends Thread {
@@ -17,7 +16,7 @@ public class ThreadEnvia extends Thread {
     private final Socket s;
     private final ObjectOutputStream oos;
     private final ObjectInputStream ois;
-    private final TextUserInterface tui = new TextUserInterface();
+    private final TUI tui = new TUI();
 
     public ThreadEnvia(Clientev2 cliente, Socket s) throws IOException {
         this.s = s;

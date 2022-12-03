@@ -1,7 +1,7 @@
-package Cliente;
+package Client;
 
 
-import Cliente.Thread.SendsDataToServerThread;
+import Client.Thread.SendsDataToServerThread;
 import Server.Heartbeat;
 
 import java.io.ByteArrayInputStream;

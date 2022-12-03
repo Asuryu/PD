@@ -1,6 +1,6 @@
 package Client;
 
-import Client.Threads.ThreadEnvia;
+import Client.Thread.ThreadEnvia;
 import Server.Heartbeat;
 
 import java.io.ByteArrayInputStream;

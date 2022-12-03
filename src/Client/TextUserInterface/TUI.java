@@ -1,6 +1,6 @@
-package Cliente.TextUserInterface;
+package Client.TextUserInterface;
 
-import Cliente.Client;
+import Client.Client;
 
 import java.util.Scanner;
 
@@ -13,9 +13,6 @@ public class TUI {
         sc = new Scanner(System.in);
         exit = false;
     }
-
-
-
 
     public int logedMenu() {
         int option;

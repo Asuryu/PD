@@ -1,7 +1,7 @@
-package Cliente.Thread;
+package Client.Thread;
 
-import Cliente.Client;
-import Cliente.TextUserInterface.TUI;
+import Client.Client;
+import Client.TextUserInterface.TUI;
 
 import java.io.ObjectOutputStream;
 import java.net.Socket;
