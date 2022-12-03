@@ -3,6 +3,7 @@ package Client.Thread;
 import Client.Clientev2;
 import Client.TextUserInterface.TUI;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -195,7 +196,7 @@ public class ThreadEnvia extends Thread {
                         System.exit(0);
                 }
             }
-        } catch (SocketException e) {
+        } catch (SocketException | EOFException e) {
             System.out.println("[ ! ] The server has closed the connection");
         } catch (Exception e) {
             System.out.println("[ ! ] An error has occurred while sending a message");

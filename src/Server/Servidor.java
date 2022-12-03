@@ -77,7 +77,8 @@ public class Servidor {
                 System.out.println("[ · ] Requesting a copy of the database from server " + hb.getIp() + ":" + hb.getPort() + "...");
                 Socket s = new Socket(hb.getIp(), hb.getPort());
                 ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-                oos.writeObject("GET_DATABASE");
+                String[] array = {"GET_DATABASE"};
+                oos.writeObject(array);
                 oos.flush();
 
                 // Receber cópia da base de dados
@@ -100,7 +101,8 @@ public class Servidor {
                     System.out.println("[ · ] Requesting a copy of the database from server " + hb.getIp() + ":" + hb.getPort() + "...");
                     Socket s = new Socket(hb.getIp(), hb.getPort());
                     ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-                    oos.writeObject("GET_DATABASE");
+                    String[] array = {"GET_DATABASE"};
+                    oos.writeObject(array);
                     oos.flush();
 
                     // Receber cópia da base de dados
