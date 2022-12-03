@@ -48,13 +48,40 @@ public class ThreadEnvia extends Thread {
                                 System.out.println("Login successful ADMIN");
                                 cliente.setLoggedIn(true);
                                 cliente.setAdmin(true);
+                                int opt2 = tui.logedMenuAdmin();
+                                switch (opt2){
+                                    case 1:
+                                        String[] sendingSTREDITADMIN = new String[4];
+                                        System.out.print("******ADMIN******\n---- ALTERAR DADOS ----\n");
+                                        sendingSTREDITADMIN[0] = "EDIT_PROFILE";
+                                        System.out.print("Name:");
+                                        sendingSTREDITADMIN[1] = sc.nextLine();;
+                                        System.out.print("Username: ");
+                                        sendingSTREDITADMIN[2] = sc.nextLine();
+                                        System.out.print("Password: ");
+                                        sendingSTREDITADMIN[3] = sc.nextLine();
+                                        oos.writeObject(sendingSTREDITADMIN);
+                                        oos.flush();
+                                        String response3 = (String) ois.readObject();
+                                        switch (response3){
+                                            case "UPDATE_SUCCESSFUL":
+                                                System.out.println("Edit profile successful");
+                                                break;
+                                            case "USER_NOT_FOUND":
+                                                System.out.println("User not found");
+                                                break;
+                                            default:
+                                                System.out.println("Unknown response");
+                                                break;
+                                        }
+                                }
                                 break;
                             case "LOGIN_FAILED":
                                 System.out.println("Login failed");
                                 break;
                             case "LOGIN_SUCCESSFUL":
                                 System.out.println("Login successful");
-                                
+
                                 break;
                             default:
                                 System.out.println("Unknown response");
@@ -65,7 +92,7 @@ public class ThreadEnvia extends Thread {
                         String[] sendingSTRREGISTER = new String[4];
                         sendingSTRREGISTER[0] = "REGISTER";
                         System.out.println("----- REGISTER -----");
-                        System.out.println("Name: ");
+                        System.out.print("Name: ");
                         sendingSTRREGISTER[1] = sc.nextLine();
                         System.out.print("Username: ");
                         sendingSTRREGISTER[2] = sc.nextLine();
