@@ -147,7 +147,8 @@ public class ThreadHeartbeat extends Thread {
 
                         Socket s = new Socket(hb.getIp(), hb.getPort());
                         ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-                        oos.writeObject("GET_DATABASE");
+                        String[] array = {"GET_DATABASE"};
+                        oos.writeObject(array);
                         oos.flush();
                         ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
                         HashMap<Integer, String> recvDb = (HashMap<Integer, String>) ois.readObject();

@@ -59,10 +59,9 @@ public class TUI {
         System.out.println("8 - Remover reserva");
         System.out.println("9 - Pagar");
         System.out.println("10 - Inserir espetaculos");
-        do {
-            System.out.print("Escolha uma opcao: ");
-            option = sc.nextInt();
-        } while (option < 1 || option > 11);
+        System.out.print("Escolha uma opcao: ");
+        option = sc.nextInt();
+
         return option;
 
     }
@@ -76,18 +75,10 @@ public class TUI {
             System.out.println("5 - Selecionar espetaculo");
             System.out.println("6 - Ver lugar disponiveis e respectivos precos");
             System.out.println("7 - Selecionar lugares pretendidos");
-            System.out.println("8 - Validar reserva");
-            System.out.println("9 - Inserir espetaculo");
-            System.out.println("10 - Pagar");
-            System.out.println("11 - Eliminar espetaculo");
-
-            do {
-                System.out.print("Escolha uma opcao: ");
-                option = sc.nextInt();
-            } while (option < 1 || option > 12);
-
-
-        return option;
+            System.out.println("8 - Pagar");
+            System.out.print("Escolha uma opcao: ");
+            option = sc.nextInt();
+            return option;
     }
     public int mainMenu() {//menu de login
         int option;

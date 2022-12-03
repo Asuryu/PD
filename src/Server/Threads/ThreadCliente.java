@@ -37,7 +37,7 @@ public class ThreadCliente extends Thread{
             in = new ObjectInputStream(client.getInputStream());
             while (!isInterrupted()){
                 String[] arrayRequest = (String[])in.readObject();
-                System.out.println("Received: " + Arrays.toString(arrayRequest));
+                //System.out.println("Received: " + Arrays.toString(arrayRequest)); // DEBUG
                 switch (arrayRequest[0].toUpperCase()) {
                     case "GET_DATABASE" -> getDatabase();
                     case "REGISTER" -> register(arrayRequest[1], arrayRequest[2], arrayRequest[3]);
@@ -83,7 +83,6 @@ public class ThreadCliente extends Thread{
                 System.out.println("[ ! ] Client " + client.getInetAddress().getHostAddress() + ":" + client.getPort() + " has disconnected");
                 admin = false;
             } catch (SQLException ignored) {}
-            e.printStackTrace();
         }
         catch (IOException | ClassNotFoundException | SQLException e){
             e.printStackTrace();
@@ -300,21 +299,27 @@ public class ThreadCliente extends Thread{
             ArrayList<String> payments = new ArrayList<>();
             ResultSet rs;
             if(whatToList.equals("AWAITING_PAYMENT_CONFIRMATION")){
+                out.writeObject("AWAITING_PAYMENT_CONFIRMATION");
                 rs = stmt.executeQuery("SELECT * FROM reserva WHERE pago = 0 AND id_utilizador = " + clientID);
                 while(rs.next()){
-                    String payment = rs.getString("payment_id") + " " + rs.getString("payment_amount") + " " + rs.getString("payment_date") + " " + rs.getString("payment_confirmed");
+                    ResultSet rs2 = stmt.executeQuery("SELECT * FROM espetaculos WHERE id = " + rs.getString("id_espetaculo"));
+                    rs2.next();
+                    ResultSet rs3 = stmt.executeQuery("SELECT * FROM lugar WHERE id_espetaculo = " + rs2.getString("id"));
+                    rs3.next();
+                    String payment = "Reservation ID: " + rs.getString("id") + " | Show: " + rs2.getString("name") + " | Date: " + rs2.getString("date") + " | Price: " + rs3.getString("price");
                     payments.add(payment);
-                    out.writeObject(payment);
-                    out.flush();
                 }
+                out.writeObject(payments);
+                out.flush();
             }else if(whatToList.equals("PAYMENT_CONFIRMED")){
+                out.writeObject("PAYMENT_CONFIRMED");
                 rs = stmt.executeQuery("SELECT * FROM reserva WHERE pago = 1 AND id_utilizador = " + clientID);
                 while(rs.next()){
-                    String payment = rs.getString("payment_id") + " " + rs.getString("payment_amount") + " " + rs.getString("payment_date") + " " + rs.getString("payment_confirmed");
+                    String payment = "Reservation ID: " + rs.getString("id") + " | Show: " + rs.getString("id_espetaculo") + " | Date: " + rs.getString("data_hora") + " | Price: " + rs.getString("preco");
                     payments.add(payment);
-                    out.writeObject(payment);
-                    out.flush();
                 }
+                out.writeObject(payments);
+                out.flush();
             }
         }catch (IOException | SQLException e) {
             out.writeObject("ERROR_OCCURED");
@@ -404,6 +409,7 @@ public class ThreadCliente extends Thread{
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT id, username FROM utilizador WHERE username='" + username + "'");
+            clientID = rs.getInt("id");
             if (rs.next()) {
                 System.out.println("[ ! ] User already exists");
                 out.writeObject("USER_ALREADY_EXISTS");
@@ -417,7 +423,6 @@ public class ThreadCliente extends Thread{
                 String updateQuery = "UPDATE utilizador SET autenticado = 1 WHERE username = '" + username + "'";
                 stmt.executeUpdate(updateQuery);
                 server.incDbVersion(updateQuery);
-                clientID = rs.getInt("id");
             }
             rs.close();
             out.writeObject("REGISTER_SUCCESSFUL");

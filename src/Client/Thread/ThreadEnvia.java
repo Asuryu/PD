@@ -55,7 +55,7 @@ public class ThreadEnvia extends Thread {
                                 do {
                                     do {
                                         opt2 = tui.logedMenuAdmin();
-                                    }while(opt2 < 1 || opt2 > 10 );
+                                    }while(opt2 < 1 || opt2 > 11);
                                     switch (opt2) {
                                         case 1:
                                             String[] sendingSTREDITADMIN = new String[4];
@@ -129,9 +129,6 @@ public class ThreadEnvia extends Thread {
                                             break;
                                         case 4:
                                             System.out.print("******ADMIN******\n---- Consultar e pesquisa de espetaculos ----\n");
-                                           /* String[] f = new String[2];
-                                            String[] fil = tui.menuFiltros();
-                                            System.out.println(fil);*/
                                             String[] f = new String[2];
                                             f[0] = "SHOWS_LIST_SEARCH";
                                             f[1] = "nome Divertido, localidade Porto";
@@ -287,6 +284,193 @@ public class ThreadEnvia extends Thread {
                                         break;
                                     case "LOGIN_SUCCESSFUL":
                                         System.out.println("Login successful");
+                                        int opt3;
+                                        do {
+                                            do {
+                                                opt3 = tui.logedMenu();
+                                            }while(opt3 < 1 || opt3 > 9);
+                                            switch (opt3) {
+                                                case 1:
+                                                    String[] sendingSTREDITADMIN = new String[4];
+                                                    System.out.print("******USER******\n---- ALTERAR DADOS ----\n");
+                                                    sendingSTREDITADMIN[0] = "EDIT_PROFILE";
+                                                    System.out.print("Name:");
+                                                    sendingSTREDITADMIN[1] = sc.nextLine();
+                                                    System.out.print("Username: ");
+                                                    sendingSTREDITADMIN[2] = sc.nextLine();
+                                                    System.out.print("Password: ");
+                                                    sendingSTREDITADMIN[3] = sc.nextLine();
+                                                    oos.writeObject(sendingSTREDITADMIN);
+                                                    oos.flush();
+                                                    String s1 = (String) ois.readObject();
+                                                    switch (s1) {
+                                                        case "UPDATE_SUCCESSFUL":
+                                                            System.out.println("Edit profile successful");
+                                                            break;
+                                                        case "USER_NOT_FOUND":
+                                                            System.out.println("User not found");
+                                                            break;
+                                                        default:
+                                                            System.out.println("Unknown response");
+                                                            break;
+                                                    }
+                                                    break;
+                                                case 2:
+                                                    System.out.print("******USER******\n---- Lista de pagamento ----\n");
+                                                    String[] payments = new String[1];
+                                                    payments[0] = "AWAITING_PAYMENT_CONFIRMATION";
+                                                    oos.writeObject(payments);
+                                                    oos.flush();
+                                                    String s2 = (String) ois.readObject();
+                                                    switch (s2){
+                                                        case "ERROR_OCCURED":
+                                                            System.out.println("Unknown response");
+                                                            break;
+                                                        default:
+                                                            ArrayList d2 = (ArrayList) ois.readObject();
+                                                            if (d2.size() == 0)
+                                                                System.out.print("Tudo pago!!! Pessoa eficaz");
+                                                            else {
+                                                                System.out.print("Ainda tem por pagar:");
+                                                                System.out.println(d2);
+                                                            }
+                                                            break;
+                                                    }
+                                                    break;
+                                                case 3:
+                                                    System.out.print("******USER******\n---- Reservas Pagas ----\n");
+                                                    String[] paymentsP = new String[1];
+                                                    paymentsP[0] = "PAYMENT_CONFIRMED";
+                                                    oos.writeObject(paymentsP);
+                                                    oos.flush();
+                                                    String s3 = (String) ois.readObject();
+                                                    switch (s3) {
+                                                        case "ERROR_OCCURED":
+                                                            System.out.println("Unknown response");
+                                                            break;
+                                                        default:
+                                                            ArrayList d3 = (ArrayList) ois.readObject();
+                                                            if (d3.size() == 0)
+                                                                System.out.print("Historico de reservas:\nVazio");
+                                                            else {
+                                                                System.out.print("Historico de reservas pagas:");
+                                                                System.out.println(d3);
+                                                            }
+                                                            break;
+                                                    }
+
+                                                    break;
+                                                case 4:
+                                                    //TODO
+                                                    System.out.print("******ADMIN******\n---- Consultar e pesquisa de espetaculos ----\n");
+                                                    String[] f = new String[2];
+                                                    f[0] = "SHOWS_LIST_SEARCH";
+                                                    f[1] = "nome Divertido, localidade Porto";
+                                                    oos.writeObject(f);
+                                                    oos.flush();
+                                                    String s4 = (String) ois.readObject();
+                                                    switch (s4) {
+                                                        case "ERROR_OCCURED":
+                                                            System.out.println("Unknown response");
+                                                            break;
+                                                        default:
+                                                            ArrayList d4 = (ArrayList) ois.readObject();
+                                                            if (d4.size() == 0)
+                                                                System.out.print("Sem pesquisas:\nVazio");
+                                                            else {
+                                                                System.out.print("Lista:");
+                                                                System.out.println(d4);
+                                                            }
+                                                            break;
+                                                    }
+                                                    break;
+                                                case 5:
+                                                    System.out.print("******USER******\n---- Selecionar Espetaculo ----\n");
+                                                    String[] s = new String[1];
+                                                    s[0] = "PAYMENT_CONFIRMED";
+                                                    oos.writeObject(s);
+                                                    oos.flush();
+                                                    String s5 = (String) ois.readObject();
+                                                    switch (s5) {
+                                                        case "ERROR_OCCURED":
+                                                            System.out.println("Unknown response");
+                                                            break;
+                                                        default:
+                                                            ArrayList d5 = (ArrayList) ois.readObject();
+                                                            if (d5.size() == 0)
+                                                                System.out.print("Nao foram encontrados espetaculos:\n");
+                                                            else {
+                                                                System.out.println(d5);
+                                                            }
+                                                            break;
+                                                    }
+                                                    break;
+                                                case 6:
+                                                    //TODO
+                                                    System.out.print("******USER******\n---- Lugares e Precos ----\n");
+                                                    String[] placesAndPricesSTR = new String[2];
+                                                    placesAndPricesSTR[0] = "AVAILABLE_SEATS_AND_PRICE";
+                                                    placesAndPricesSTR[1] = "";
+                                                    do {
+                                                        System.out.print("Dos lugares disponiveis digite os que pretende:");
+                                                        placesAndPricesSTR[1] += sc.next();
+                                                    }while(placesAndPricesSTR[1] == "\n");
+                                                    System.out.println(placesAndPricesSTR[1]);
+                                                    oos.writeObject(placesAndPricesSTR);
+                                                    oos.flush();
+                                                    String s6 = (String) ois.readObject();
+                                                    switch (s6) {
+                                                        case "ERROR_OCCURED":
+                                                            System.out.println("Unknown response");
+                                                            break;
+                                                        default:
+                                                            ArrayList d6 = (ArrayList) ois.readObject();
+                                                            if (d6.size() == 0)
+                                                                System.out.print("Nao foram encontrados sitios:\n");
+                                                            else {
+                                                                System.out.println(d6);
+                                                            }
+                                                            break;
+                                                    }
+                                                    break;
+                                                case 7:
+                                                    //TODO
+                                                    System.out.print("******USER******\n---- Selecionar sitios ----\n");
+                                                    String[] pla = new String[2];
+                                                    pla[0] = "AVAILABLE_SEATS_AND_PRICE";
+                                                    pla[1] = " ";
+                                                    do {
+                                                        System.out.print("Dos lugares disponiveis digite os que pretende:");
+                                                        pla[1] += sc.nextLine();
+                                                    }while(pla[1] == "\n");
+                                                    System.out.println(pla[1]);
+                                                    break;
+                                                case 8:
+                                                    System.out.print("******USER******\n---- Pagar ----\n");
+                                                    String[] paying = new String[2];
+                                                    paying[0] = "PAY";
+                                                    System.out.print("Pagar: ");
+                                                    paying[1] = sc.nextLine();
+                                                    oos.writeObject(paying);
+                                                    oos.flush();
+                                                    String s8 = (String) ois.readObject();
+                                                    switch (s8){
+                                                        case "ERROR_OCCURED":
+                                                            System.out.println("Unknown response");
+                                                            break;
+                                                        case "PAYMENT_SUCCESSFUL":
+                                                            System.out.println("Pagamento feito com sucesso");
+                                                            break;
+                                                        default:
+                                                            System.out.println("Desconhecido");
+                                                            break;
+                                                    }
+                                                    break;
+                                                default:
+                                                    exit = true;
+                                                    break;
+                                            }
+                                        }while(!exit);
 
                                         break;
                                     default:
