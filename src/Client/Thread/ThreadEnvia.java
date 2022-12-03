@@ -129,23 +129,31 @@ public class ThreadEnvia extends Thread {
                                             break;
                                         case 4:
                                             System.out.print("******ADMIN******\n---- Consultar e pesquisa de espetaculos ----\n");
-                                            String[] f = new String[2];
-                                            f[0] = "SHOWS_LIST_SEARCH";
-                                            f[1] = "nome Divertido, localidade Porto";
-                                            oos.writeObject(f);
+                                            String[] sendingSTRSEARCH = new String[5];
+                                            sendingSTRSEARCH[0] = "SHOWS_LIST_SEARCH";
+                                            // Filters to search
+                                            System.out.print("Nome do espetaculo: ");
+                                            sendingSTRSEARCH[1] = "nome " + sc.nextLine();
+                                            System.out.print("Tipo de espetaculo: ");
+                                            sendingSTRSEARCH[2] = "tipo " + sc.nextLine();
+                                            System.out.print("Data do espetaculo: ");
+                                            sendingSTRSEARCH[3] = "data_hora " + sc.nextLine();
+                                            System.out.print("Localidade do espetaculo: ");
+                                            sendingSTRSEARCH[4] = "localidade " + sc.nextLine();
+                                            oos.writeObject(sendingSTRSEARCH);
                                             oos.flush();
-                                            String r6 = (String) ois.readObject();
-                                            switch (r6) {
+                                            String response6 = (String) ois.readObject();
+                                            switch (response6) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("Unknown response");
                                                     break;
                                                 default:
-                                                    ArrayList response6 = (ArrayList) ois.readObject();
-                                                    if (response6.size() == 0)
-                                                        System.out.print("Sem pesquisas:\nVazio");
+                                                    ArrayList response7 = (ArrayList) ois.readObject();
+                                                    if (response7.size() == 0)
+                                                        System.out.print("Nao foram encontrados espetaculos com os filtros indicados");
                                                     else {
-                                                        System.out.print("Lista:");
-                                                        System.out.println(response6);
+                                                        System.out.print("Espetaculos encontrados:");
+                                                        System.out.println(response7);
                                                     }
                                                     break;
                                             }
