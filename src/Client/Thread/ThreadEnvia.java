@@ -181,14 +181,13 @@ public class ThreadEnvia extends Thread {
                                             break;
                                         case 6:
                                             System.out.print("******ADMIN******\n---- Lugares e Precos ----\n");
-                                            String[] placesAndPricesSTR = new String[2];
+                                            String[] placesAndPricesSTR = new String[10];
                                             placesAndPricesSTR[0] = "AVAILABLE_SEATS_AND_PRICE";
-                                            placesAndPricesSTR[1] = "";
-                                            do {
-                                                System.out.print("Dos lugares disponiveis digite os que pretende:");
-                                                placesAndPricesSTR[1] += sc.next();
-                                            }while(placesAndPricesSTR[1] == "\n");
-                                            System.out.println(placesAndPricesSTR[1]);
+                                            placesAndPricesSTR[1] = " ";
+                                            System.out.print("Digite um lugar que pretende:");
+                                            placesAndPricesSTR[1] =  ("," + sc.nextLine());
+
+                                            System.out.println(placesAndPricesSTR[0]+" " +placesAndPricesSTR[1]);
                                             oos.writeObject(placesAndPricesSTR);
                                             oos.flush();
                                             String r8 = (String) ois.readObject();
@@ -214,7 +213,7 @@ public class ThreadEnvia extends Thread {
                                             do {
                                                 System.out.print("Dos lugares disponiveis digite os que pretende:");
                                                 pla[1] += sc.nextLine();
-                                            }while(pla[1] == "\n");
+                                            } while (pla[1] == "\n");
                                             System.out.println(pla[1]);
                                             break;
                                         case 8:
@@ -226,7 +225,7 @@ public class ThreadEnvia extends Thread {
                                             oos.writeObject(rem);
                                             oos.flush();
                                             String r9 = (String) ois.readObject();
-                                            switch (r9){
+                                            switch (r9) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("Unknown response");
                                                     break;
@@ -247,7 +246,7 @@ public class ThreadEnvia extends Thread {
                                             oos.writeObject(paying);
                                             oos.flush();
                                             String r10 = (String) ois.readObject();
-                                            switch (r10){
+                                            switch (r10) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("Unknown response");
                                                     break;
@@ -268,7 +267,7 @@ public class ThreadEnvia extends Thread {
                                             oos.writeObject(ins);
                                             oos.flush();
                                             String r11 = (String) ois.readObject();
-                                            switch (r11){
+                                            switch (r11) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("Unknown response");
                                                     break;
@@ -369,11 +368,19 @@ public class ThreadEnvia extends Thread {
 
                                                     break;
                                                 case 4:
-                                                    //TODO
+
                                                     System.out.print("******ADMIN******\n---- Consultar e pesquisa de espetaculos ----\n");
                                                     String[] f = new String[2];
                                                     f[0] = "SHOWS_LIST_SEARCH";
-                                                    f[1] = "nome Divertido, localidade Porto";
+                                                    // Filters to search
+                                                    System.out.print("Nome do espetaculo: ");
+                                                    f[1] = "nome " + sc.nextLine();
+                                                    System.out.print("Tipo de espetaculo: ");
+                                                    f[2] = "tipo " + sc.nextLine();
+                                                    System.out.print("Data do espetaculo: ");
+                                                    f[3] = "data_hora " + sc.nextLine();
+                                                    System.out.print("Localidade do espetaculo: ");
+                                                    f[4] = "localidade " + sc.nextLine();
                                                     oos.writeObject(f);
                                                     oos.flush();
                                                     String s4 = (String) ois.readObject();
@@ -414,17 +421,16 @@ public class ThreadEnvia extends Thread {
                                                     }
                                                     break;
                                                 case 6:
-                                                    //TODO
+
                                                     System.out.print("******USER******\n---- Lugares e Precos ----\n");
-                                                    String[] placesAndPricesSTR = new String[2];
-                                                    placesAndPricesSTR[0] = "AVAILABLE_SEATS_AND_PRICE";
-                                                    placesAndPricesSTR[1] = "";
-                                                    do {
-                                                        System.out.print("Dos lugares disponiveis digite os que pretende:");
-                                                        placesAndPricesSTR[1] += sc.next();
-                                                    }while(placesAndPricesSTR[1] == "\n");
-                                                    System.out.println(placesAndPricesSTR[1]);
-                                                    oos.writeObject(placesAndPricesSTR);
+                                                    String[] pp = new String[10];
+                                                    pp[0] = "AVAILABLE_SEATS_AND_PRICE";
+                                                    pp[1] = " ";
+                                                    System.out.print("Digite um lugar que pretende:");
+                                                    pp[1] =  ("," + sc.nextLine());
+
+                                                    System.out.println(pp[0]+" " +pp[1]);
+                                                    oos.writeObject(pp);
                                                     oos.flush();
                                                     String s6 = (String) ois.readObject();
                                                     switch (s6) {
