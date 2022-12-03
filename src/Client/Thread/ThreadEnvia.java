@@ -54,6 +54,7 @@ public class ThreadEnvia extends Thread {
                                 break;
                             case "LOGIN_SUCCESSFUL":
                                 System.out.println("Login successful");
+                                
                                 break;
                             default:
                                 System.out.println("Unknown response");
@@ -61,13 +62,15 @@ public class ThreadEnvia extends Thread {
                         }
                         break;
                     case 2:
-                        String[] sendingSTRREGISTER = new String[3];
+                        String[] sendingSTRREGISTER = new String[4];
                         sendingSTRREGISTER[0] = "REGISTER";
                         System.out.println("----- REGISTER -----");
-                        System.out.print("Username: ");
+                        System.out.println("Name: ");
                         sendingSTRREGISTER[1] = sc.nextLine();
-                        System.out.print("Password: ");
+                        System.out.print("Username: ");
                         sendingSTRREGISTER[2] = sc.nextLine();
+                        System.out.print("Password: ");
+                        sendingSTRREGISTER[3] = sc.nextLine();
                         oos.writeObject(sendingSTRREGISTER);
                         oos.flush();
                         String response2 = (String) ois.readObject();
