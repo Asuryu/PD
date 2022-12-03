@@ -14,6 +14,39 @@ public class TUI {
         exit = false;
     }
 
+    /*public String[] menuFiltros(){
+        String option;
+        String [] ft = new String[1];
+        do {
+            System.out.println("Filtros para pesquisa:");
+            System.out.println("Nome");
+            System.out.println("Localidade");
+            System.out.println("Genero");
+            System.out.println("Data");
+            System.out.println("Nada");
+            System.out.println("Nada");
+            option = sc.nextLine();
+            option.toLowerCase();
+            ft[0] = option + ",";
+            System.out.println(ft[0]);
+            switch (option) {
+                case "nome":
+                    System.out.print("Indique ");
+                    break;
+                case "genero":
+                    break;
+                case "localidade":
+                    break;
+                case "data":
+                    break;
+                case "nada":
+                    ft[0] = " ";
+                    break;
+            }
+        }while( option.toLowerCase() == "sair");
+        return ft;
+
+    }*/
     public int logedMenuAdmin() {
         int option;
         System.out.println("1 - Editar dados dos prefil");
@@ -56,7 +89,6 @@ public class TUI {
 
         return option;
     }
-
     public int mainMenu() {//menu de login
         int option;
         System.out.println("1 - Login");
