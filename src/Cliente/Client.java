@@ -29,7 +29,7 @@ public class Client {
         this.ip = ip;
         isLogged = false;
 
-       // while (true) {
+        while (true) {
             try {
                 datagramSocket = new DatagramSocket();
                 datagramSocket.connect(InetAddress.getByName(ip), port);
@@ -63,7 +63,7 @@ public class Client {
 
         }
 
-    //}
+    }
 
     public static void main(String[] args) {
         if (args.length != 2) {
