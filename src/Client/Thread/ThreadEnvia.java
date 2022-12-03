@@ -178,12 +178,14 @@ public class ThreadEnvia extends Thread {
                                             System.out.print("******ADMIN******\n---- Lugares e Precos ----\n");
                                             String[] placesAndPricesSTR = new String[2];
                                             placesAndPricesSTR[0] = "AVAILABLE_SEATS_AND_PRICE";
-                                            placesAndPricesSTR[1] = " ";
+                                            placesAndPricesSTR[1] = "";
                                             do {
                                                 System.out.print("Dos lugares disponiveis digite os que pretende:");
-                                                placesAndPricesSTR[1] += sc.nextLine();
+                                                placesAndPricesSTR[1] += sc.next();
                                             }while(placesAndPricesSTR[1] == "\n");
                                             System.out.println(placesAndPricesSTR[1]);
+                                            oos.writeObject(placesAndPricesSTR);
+                                            oos.flush();
                                             String r8 = (String) ois.readObject();
                                             switch (r8) {
                                                 case "ERROR_OCCURED":
@@ -201,16 +203,79 @@ public class ThreadEnvia extends Thread {
                                             break;
                                         case 7:
                                             System.out.print("******ADMIN******\n---- Selecionar sitios ----\n");
+                                            String[] pla = new String[2];
+                                            pla[0] = "AVAILABLE_SEATS_AND_PRICE";
+                                            pla[1] = " ";
+                                            do {
+                                                System.out.print("Dos lugares disponiveis digite os que pretende:");
+                                                pla[1] += sc.nextLine();
+                                            }while(pla[1] == "\n");
+                                            System.out.println(pla[1]);
                                             break;
                                         case 8:
-                                            System.out.print("******ADMIN******\n---- Validar reserva ----\n");
+                                            System.out.print("******ADMIN******\n---- Remover reserva ----\n");
+                                            String[] rem = new String[2];
+                                            rem[0] = "REMOVE_RESERVATION";
+                                            System.out.print("ID da reserva: ");
+                                            rem[1] = sc.nextLine();
+                                            oos.writeObject(rem);
+                                            oos.flush();
+                                            String r9 = (String) ois.readObject();
+                                            switch (r9){
+                                                case "ERROR_OCCURED":
+                                                    System.out.println("Unknown response");
+                                                    break;
+                                                case "SHOW_REMOVED_SUCCESSFULLY":
+                                                    System.out.println("Reserva removida com sucesso");
+                                                    break;
+                                                default:
+                                                    System.out.println("Desconhecido");
+                                                    break;
+                                            }
                                             break;
                                         case 9:
-                                            System.out.print("******ADMIN******\n---- Remover reserva ----\n");
+                                            System.out.print("******ADMIN******\n---- Pagar ----\n");
+                                            String[] paying = new String[2];
+                                            paying[0] = "PAY";
+                                            System.out.print("Pagar: ");
+                                            paying[1] = sc.nextLine();
+                                            oos.writeObject(paying);
+                                            oos.flush();
+                                            String r10 = (String) ois.readObject();
+                                            switch (r10){
+                                                case "ERROR_OCCURED":
+                                                    System.out.println("Unknown response");
+                                                    break;
+                                                case "PAYMENT_SUCCESSFUL":
+                                                    System.out.println("Pagamento feito com sucesso");
+                                                    break;
+                                                default:
+                                                    System.out.println("Desconhecido");
+                                                    break;
+                                            }
                                             break;
                                         case 10:
-                                            System.out.print("******ADMIN******\n---- Pagar ----\n");
+                                            System.out.print("******ADMIN******\n---- Inserir espetaculos ----\n");
+                                            String[] ins = new String[2];
+                                            ins[0] = "INSERT";
+                                            System.out.print("Nome do espetaculo: ");
+                                            ins[1] = sc.nextLine();
+                                            oos.writeObject(ins);
+                                            oos.flush();
+                                            String r11 = (String) ois.readObject();
+                                            switch (r11){
+                                                case "ERROR_OCCURED":
+                                                    System.out.println("Unknown response");
+                                                    break;
+                                                case "SHOW_INSERTED_SUCCESSFULLY":
+                                                    System.out.println("Inserido espetaculo");
+                                                    break;
+                                                default:
+                                                    System.out.println("Desconhecido");
+                                                    break;
+                                            }
                                             break;
+
                                         default:
                                             exit = true;
                                             break;
