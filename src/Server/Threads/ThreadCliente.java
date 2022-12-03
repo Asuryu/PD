@@ -36,6 +36,7 @@ public class ThreadCliente extends Thread{
             while (!isInterrupted()){
                 out = new ObjectOutputStream(client.getOutputStream());
                 in = new ObjectInputStream(client.getInputStream());
+
                 String request = (String)in.readObject();
                 String[] arrayRequest = request.split(" ");
                 switch (arrayRequest[0].toUpperCase()) {
@@ -83,7 +84,7 @@ public class ThreadCliente extends Thread{
                 System.out.println("[ ! ] Client " + client.getInetAddress().getHostAddress() + ":" + client.getPort() + " has disconnected");
                 admin = false;
             } catch (SQLException ignored) {}
-
+            e.printStackTrace();
         }
         catch (IOException | ClassNotFoundException | SQLException e){
             e.printStackTrace();
