@@ -1,16 +1,15 @@
-package Client.TUI;
+package Cliente.TextUserInterface;
 
-import Client.Cliente;
+import Cliente.Client;
 
 import java.util.Scanner;
 
-public class TextUserInterface {
-
+public class TUI {
     private Scanner sc;
-    public Cliente c;
+    public Client c;
     private boolean exit;
 
-    public TextUserInterface() {
+    public TUI() {
         sc = new Scanner(System.in);
         exit = false;
     }
@@ -20,7 +19,7 @@ public class TextUserInterface {
 
     public int logedMenu() {
         int option;
-        if (!c.isAdmin){
+        /*if (!c.isAdmin){
             System.out.println("1 - Editar dados dos prefil");
             System.out.println("2 - Consultar reservas ainda não pagas");
             System.out.println("3 - Consultar reservas pagas");
@@ -35,24 +34,24 @@ public class TextUserInterface {
                 System.out.print("Escolha uma opcao: ");
                 option = sc.nextInt();
             } while (option < 1 || option > 11);
-        }else{
-                System.out.println("1 - Editar dados dos prefil");
-                System.out.println("2 - Consultar reservas ainda não pagas");
-                System.out.println("3 - Consultar reservas pagas");
-                System.out.println("4 - Consultar e pesquisa de espetaculos");
-                System.out.println("5 - Selecionar espetaculo");
-                System.out.println("6 - Ver lugar disponiveis e respectivos precos");
-                System.out.println("7 - Selecionar lugares pretendidos");
-                System.out.println("8 - Validar reserva");
-                System.out.println("9 - Inserir espetaculo");
-                System.out.println("10 - Pagar");
-                System.out.println("11 - Eliminar espetaculo");
+        }else{*/
+            System.out.println("1 - Editar dados dos prefil");
+            System.out.println("2 - Consultar reservas ainda não pagas");
+            System.out.println("3 - Consultar reservas pagas");
+            System.out.println("4 - Consultar e pesquisa de espetaculos");
+            System.out.println("5 - Selecionar espetaculo");
+            System.out.println("6 - Ver lugar disponiveis e respectivos precos");
+            System.out.println("7 - Selecionar lugares pretendidos");
+            System.out.println("8 - Validar reserva");
+            System.out.println("9 - Inserir espetaculo");
+            System.out.println("10 - Pagar");
+            System.out.println("11 - Eliminar espetaculo");
 
             do {
                 System.out.print("Escolha uma opcao: ");
                 option = sc.nextInt();
             } while (option < 1 || option > 12);
-        }
+
 
         return option;
     }

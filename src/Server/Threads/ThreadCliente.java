@@ -82,7 +82,7 @@ public class ThreadCliente extends Thread{
                 System.out.println("[ ! ] Client " + client.getInetAddress().getHostAddress() + ":" + client.getPort() + " has disconnected");
                 admin = false;
             } catch (SQLException ignored) {}
-
+            e.printStackTrace();
         }
         catch (IOException | ClassNotFoundException | SQLException e){
             e.printStackTrace();

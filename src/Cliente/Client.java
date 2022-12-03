@@ -1,43 +1,36 @@
-package Client;
+package Cliente;
 
-import Client.TUI.TextUserInterface;
-import Client.Threads.ThreadAtendeServidor;
-import Client.Threads.ThreadEnviaServidor;
+
+import Cliente.Thread.SendsDataToServerThread;
 import Server.Heartbeat;
-
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 
-public class Cliente {
+public class Client {
     public DatagramSocket datagramSocket; // Socket to receive UDP packets
-    public Boolean isLogged; // Flag to indicate if the client is logged or not
-    public Boolean isReg;// Flag to indicate if the client is register or not
-    public Boolean wasEdit;
-    public Boolean progress;
-    public Boolean isAdmin;
+
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
     public ArrayList<Heartbeat> servers = new ArrayList<>();
     public int port;
     public String ip;
-    //public final Socket socket;
-    public final ArrayList<Socket> activeConnections = new ArrayList<>(); // List of active connections
+    Socket socket;
 
-    public Cliente(String ip, int port) throws Exception {
+    public final Boolean isLogged;
+
+
+    public Client(String ip, int port) throws Exception {
         this.port = port;
         this.ip = ip;
-        //socket = new Socket();
         isLogged = false;
-        isReg = false;
-        wasEdit = false;
-        progress = false;
-        isAdmin = false;
+
         while (true) {
             try {
-                mostraASCII();
                 datagramSocket = new DatagramSocket();
                 datagramSocket.connect(InetAddress.getByName(ip), port);
 
@@ -48,7 +41,6 @@ public class Cliente {
                 System.out.println("Requesting server list to " + ip + ":" + port);
 
                 // Recebe a lista de servidores disponíveis
-
                 DatagramPacket dp = new DatagramPacket(new byte[4096], 4096);
                 datagramSocket.receive(dp);
                 ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(dp.getData(), 0, dp.getLength()));
@@ -56,55 +48,31 @@ public class Cliente {
                 System.out.println(servers);
                 if (servers.size() == 0) {
                     System.out.println("There are no servers available");
-                    break;
+                   // break;
                 }
                 for (Heartbeat heartbeat : servers) {
-                 //   System.out.println("por conectar");
-                    Socket socket = new Socket(InetAddress.getLocalHost(), heartbeat.getPort());
-                   // System.out.println("conectado");
-                    /*ThreadAtendeServidor threadAtendeServidor = new ThreadAtendeServidor(this,socket);
-                    threads.add(threadAtendeServidor);*/
-                  ThreadEnviaServidor threadEnviaServidor = new ThreadEnviaServidor(this, socket);
-                    //threads.add(threadEnviaServidor);
-                    threadEnviaServidor.start();
-                    threadEnviaServidor.join();
-                    ThreadAtendeServidor threadAtendeServidor = new ThreadAtendeServidor(this,socket);
-                    threadAtendeServidor.start();
-                    threadAtendeServidor.join();
-
+                    socket = new Socket(InetAddress.getLocalHost(), heartbeat.getPort());
                 }
             } catch (Error e) {
                 //Caso ocorra erro a ligar ao servidor ele cancela
                 System.out.println("An error has while receiving the server list");
                 System.out.println("      " + e.getMessage());
             }
-           /* for (Thread t : threads) {
-                t.start();
-            }
-
-            for (Thread t : threads) {
-                t.join();
-            }*/
-         /*  for (Thread t : threads) {
-                t.start();
-            }
-
-            for (Thread t : threads) {
-                t.join();
-            }*/
+        SendsDataToServerThread sendsDataToServerThread = new SendsDataToServerThread(this,socket);
+            sendsDataToServerThread.start();
 
         }
 
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         if (args.length != 2) {
             System.err.println("[ ! ] Syntax: <lb address> <lb port>");
             return;
         }
-
+        mostraASCII();
         try {
-            new Cliente(args[0], Integer.parseInt(args[1]));
+            new Client(args[0], Integer.parseInt(args[1]));
         } catch (Exception e) {
             System.out.println("[ ! ] An error has occurred while setting up the client");
             System.out.println("      " + e.getMessage());
@@ -113,7 +81,7 @@ public class Cliente {
 
     }
 
-    private void mostraASCII(){
+    private static void mostraASCII(){
         System.out.println("██████╗  ██████╗ ██╗          ██████╗ ██████╗");
         System.out.println("██╔══██╗██╔═══██╗██║          ██╔══██╗██╔══██╗");
         System.out.println("██████╔╝██║   ██║██║          ██████╔╝██║  ██║");
@@ -121,6 +89,4 @@ public class Cliente {
         System.out.println("██████╔╝╚██████╔╝███████╗     ██║     ██████╔╝");
         System.out.println("╚═════╝  ╚═════╝ ╚══════╝     ╚═╝     ╚═════╝ \n");
     }
-
 }
-
