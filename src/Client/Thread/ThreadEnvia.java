@@ -26,7 +26,7 @@ public class ThreadEnvia extends Thread {
         this.cliente = cliente;
         oos = new ObjectOutputStream(s.getOutputStream());
         ois = new ObjectInputStream(s.getInputStream());
-        lerFicheiroEspetaculos();
+        lerFicheiroEspetaculos("espetaculos.txt");
     }
 
     @Override
@@ -174,6 +174,7 @@ public class ThreadEnvia extends Thread {
                                                     break;
                                                 default:
                                                     ArrayList response7 = (ArrayList) ois.readObject();
+                                                    System.out.println(response7);
                                                     if (response7.size() == 0)
                                                         System.out.print("[ ! ] No shows found\n");
                                                     else {
@@ -279,7 +280,6 @@ public class ThreadEnvia extends Thread {
                                             break;
                                         case 10:
                                             System.out.print("\n[ * ]ADMIN\n\t[ * ] INSERT SHOW \n");
-                                            lerFicheiroEspetaculos();
                                             String[] ins = new String[10];
                                             ins[0] = "INSERT_SHOW";
                                             // Asks for the show data (descricao, tipo, data_hora, duracao, local, localidade, pais, classificacao_etaria, visivel)
@@ -322,9 +322,12 @@ public class ThreadEnvia extends Thread {
                                             remov[0] = "REMOVE_SHOW";
                                             System.out.print("[ · ] Show ID: ");
                                             remov[1] = sc.nextLine();
+                                            System.out.println(Arrays.toString(remov));
                                             oos.writeObject(remov);
                                             oos.flush();
+                                            System.out.println("SENT");
                                             String r13 = (String) ois.readObject();
+                                            System.out.println(r13);
                                             switch (r13) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
@@ -648,8 +651,8 @@ public class ThreadEnvia extends Thread {
         }
     }
 
-    public static void lerFicheiroEspetaculos() {
-        File ficheiro = new File("espetaculos.txt");
+    public static void lerFicheiroEspetaculos(String filename) {
+        File ficheiro = new File(filename);
         Espetaculo espetaculo = new Espetaculo();
         // read line by line
         try {

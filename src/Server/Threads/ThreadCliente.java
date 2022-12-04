@@ -390,6 +390,7 @@ public class ThreadCliente extends Thread{
             if(rs.next()){
                 ResultSet rs2 = stmt.executeQuery("SELECT username FROM utilizador WHERE administrador = 1 AND username = '" + username + "'");
                 if(rs2.next()){
+                    admin = true;
                     out.writeObject("ADMIN_LOGIN_SUCCESSFUL");
                     out.flush();
                 }else{
