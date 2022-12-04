@@ -10,10 +10,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ThreadCliente extends Thread{
     protected final Servidor server;
@@ -50,7 +47,7 @@ public class ThreadCliente extends Thread{
                         HashMap<String, String> filters = new HashMap<>();
                         for (int i = 1; i < arrayRequest.length; i++) {
                             String[] filter = arrayRequest[i].split(" ");
-                            filters.put(filter[0], filter[1]);
+                            if(filter.length == 2) filters.put(filter[0], filter[1]);
                         }
                         shows_list_search(filters);
                     }
@@ -59,6 +56,8 @@ public class ThreadCliente extends Thread{
                     case "SELECT_SEATS" -> select_seats(arrayRequest[1]);
                     case "REMOVE_RESERVATION" -> remove_reservation(Integer.parseInt(arrayRequest[1]));
                     case "PAY" -> pay(Integer.parseInt(arrayRequest[1]));
+                    case "REMOVE_SHOW" -> removeShow(Integer.parseInt(arrayRequest[1]));
+                    case "INSERT_SHOW" -> insertShow(arrayRequest[1]);
                     default -> client.close();
                 }
                 synchronized (server.activeConnections) {
@@ -112,7 +111,7 @@ public class ThreadCliente extends Thread{
             }
         } catch (SQLException | IOException e) {
             out.writeObject("ERROR_OCCURED");
-            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("[ ! ] An error has occurred while removing show");
             System.out.println("      " + e.getMessage());
         }
     }
@@ -122,14 +121,15 @@ public class ThreadCliente extends Thread{
                 String[] arrayData = data.split(",");
                 server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
                 Statement stmt = server.dbConn.createStatement();
-                String format = "INSERT INTO espetaculo (nome, data, preco, lotacao, lotacao_maxima) VALUES ('" + arrayData[0] + "', '" + arrayData[1] + "', '" + arrayData[2] + "', '" + arrayData[3] + "', '" + arrayData[4] + "')";
+                String format = "INSERT INTO espetaculo (descricao, tipo, data_hora, duracao, local, localidade, pais, classificacao_etaria, visivel) VALUES " +
+                        "('" + arrayData[0] + "', '" + arrayData[1] + "', '" + arrayData[2] + "', '" + arrayData[3] + "', '" + arrayData[4] + "', '" + arrayData[5] + "', '" + arrayData[6] + "', '" + arrayData[7] + "', '" + arrayData[8] + "')";
                 stmt.executeUpdate(format);
                 server.incDbVersion(format);
                 out.writeObject("SHOW_INSERTED_SUCCESSFULLY");
             }
         }catch (SQLException | IOException e) {
             out.writeObject("ERROR_OCCURED");
-            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("[ ! ] An error has occurred while inserting show");
             System.out.println("      " + e.getMessage());
         }
     }
@@ -144,7 +144,7 @@ public class ThreadCliente extends Thread{
             out.writeObject("PAYMENT_CONFIRMED");
         }catch (SQLException e){
             out.writeObject("ERROR_OCCURED");
-            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("[ ! ] An error has occurred while paying reservation");
             System.out.println("      " + e.getMessage());
         }
 
@@ -170,7 +170,7 @@ public class ThreadCliente extends Thread{
         }catch (SQLException e){
             out.writeObject("ERROR_OCCURED");
             out.flush();
-            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("[ ! ] An error has occurred while removing reservation");
             System.out.println("      " + e.getMessage());
         }
     }
@@ -203,7 +203,7 @@ public class ThreadCliente extends Thread{
         } catch (SQLException e) {
             out.writeObject("ERROR_OCCURED");
             out.flush();
-            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("[ ! ] An error has occurred while showing seats");
             System.out.println("      " + e.getMessage());
         }
     }
@@ -224,7 +224,7 @@ public class ThreadCliente extends Thread{
         } catch (SQLException | IOException e) {
             out.writeObject("ERROR_OCCURED");
             out.flush();
-            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("[ ! ] An error has occurred while showing available seats and price");
             System.out.println("      " + e.getMessage());
         }
     }
@@ -234,17 +234,20 @@ public class ThreadCliente extends Thread{
         try{
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM espetaculos WHERE data > NOW() + INTERVAL 24 HOUR");
+            // SQL query to get all shows with at least 1 day from now until the show starts
+            ResultSet rs = stmt.executeQuery("SELECT * FROM espetaculo WHERE data_hora =+ 1");
             ArrayList<String> shows = new ArrayList<>();
+            out.writeObject("SHOW_SELECTED");
             while (rs.next()) {
-                shows.add(rs.getString("id") + " " + rs.getString("name") + " " + rs.getString("date") + " " + rs.getString("price"));
+                String show = (rs.getString("descricao") + " " + rs.getString("tipo") + " " + rs.getString("data_hora") + " " + rs.getString("local") + " " + rs.getString("localidade"));
+                shows.add(show);
             }
-            out.writeObject(shows.toString());
+            out.writeObject(shows);
             out.flush();
         } catch (SQLException | IOException e) {
             out.writeObject("ERROR_OCCURED");
             out.flush();
-            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("[ ! ] An error has occurred while selecting show");
             System.out.println("      " + e.getMessage());
         }
     }
@@ -257,38 +260,41 @@ public class ThreadCliente extends Thread{
             Statement stmt = server.dbConn.createStatement();
             ResultSet rs;
             ArrayList<String> shows = new ArrayList<>();
-            String format = "SELECT * FROM espetaculos WHERE visivel = 1";
+            String format = "SELECT * FROM espetaculo WHERE visivel = 1";
             if(filters.get("descricao") != null){
-                format += " name LIKE '%" + filters.get("descricao") + "%'";
+                format += " AND descricao LIKE '%" + filters.get("descricao") + "%'";
             }
             if(filters.get("tipo") != null){
-                format += " tipo LIKE '%" + filters.get("tipo") + "%'";
+                format += " AND tipo LIKE '%" + filters.get("tipo") + "%'";
             }
             if(filters.get("data_hora") != null){
-                format += " data_hora LIKE '%" + filters.get("data_hora") + "%'";
+                format += " AND data_hora LIKE '%" + filters.get("data_hora") + "%'";
             }
             if(filters.get("duracao") != null){
-                format += " duracao LIKE '%" + filters.get("duracao") + "%'";
+                format += " AND duracao LIKE '%" + filters.get("duracao") + "%'";
             }
             if(filters.get("local") != null){
-                format += " local LIKE '%" + filters.get("local") + "%'";
+                format += " AND local LIKE '%" + filters.get("local") + "%'";
             }
             if(filters.get("localidade") != null){
-                format += " localidade LIKE '%" + filters.get("localidade") + "%'";
+                format += " AND localidade LIKE '%" + filters.get("localidade") + "%'";
             }
             if(filters.get("pais") != null){
-                format += " pais LIKE '%" + filters.get("pais") + "%'";
+                format += " AND pais LIKE '%" + filters.get("pais") + "%'";
             }
+            System.out.println(format);
             rs = stmt.executeQuery(format);
             while (rs.next()) {
-                shows.add(rs.getString("id") + " " + rs.getString("name") + " " + rs.getString("date") + " " + rs.getString("price"));
+                out.writeObject("SHOW_FOUND");
+                String result = (rs.getString("id") + " " + rs.getString("descricao") + " " + rs.getString("tipo") + " " + rs.getString("data_hora") + " " + rs.getString("localidade") + " " + rs.getString("classificacao_etaria")); // TODO: To be improved
+                shows.add(result);
             }
-            out.writeObject(shows.toString());
+            out.writeObject(shows);
             out.flush();
         } catch (SQLException | IOException e) {
             out.writeObject("ERROR_OCCURED");
             out.flush();
-            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("[ ! ] An error has occurred while showing shows list");
             System.out.println("      " + e.getMessage());
         }
     }
@@ -325,7 +331,7 @@ public class ThreadCliente extends Thread{
         }catch (IOException | SQLException e) {
             out.writeObject("ERROR_OCCURED");
             out.flush();
-            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("[ ! ] An error has occurred while listing payments");
             System.out.println("      " + e.getMessage());
         }
     }
@@ -409,9 +415,12 @@ public class ThreadCliente extends Thread{
         try {
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT id, username FROM utilizador WHERE username='" + username + "'");
+            ResultSet rs = stmt.executeQuery("SELECT id, username, nome FROM utilizador WHERE username='" + username + "' OR nome='" + nome + "'");
             clientID = rs.getInt("id");
-            if (rs.next()) {
+            if(nome.equals("") || username.equals("") || password.equals("")){
+                out.writeObject("REGISTER_FAILED");
+                out.flush();
+            }else if(rs.next()){
                 System.out.println("[ ! ] User already exists");
                 out.writeObject("USER_ALREADY_EXISTS");
                 out.flush();
@@ -426,13 +435,12 @@ public class ThreadCliente extends Thread{
                 server.incDbVersion(updateQuery);
             }
             rs.close();
-            out.writeObject("REGISTER_SUCCESSFUL");
             out.flush();
         } catch (IOException | SQLException e) {
             e.printStackTrace();
             out.writeObject("REGISTER_FAILED");
             out.flush();
-            System.out.println("[ ! ] An error has occurred while editing profile");
+            System.out.println("[ ! ] An error has occurred while registering user");
             System.out.println("      " + e.getMessage());
         }
     }
