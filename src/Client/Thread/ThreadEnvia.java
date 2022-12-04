@@ -1,15 +1,14 @@
 package Client.Thread;
 
 import Client.Clientev2;
+import Client.Espetaculo;
 import Client.TextUserInterface.TUI;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class ThreadEnvia extends Thread {
@@ -26,6 +25,7 @@ public class ThreadEnvia extends Thread {
         this.cliente = cliente;
         oos = new ObjectOutputStream(s.getOutputStream());
         ois = new ObjectInputStream(s.getInputStream());
+        lerFicheiroEspetaculos();
     }
 
     @Override
@@ -278,6 +278,7 @@ public class ThreadEnvia extends Thread {
                                             break;
                                         case 10:
                                             System.out.print("\n[ * ]ADMIN\n\t[ * ] INSERT SHOW \n");
+                                            lerFicheiroEspetaculos();
                                             String[] ins = new String[10];
                                             ins[0] = "INSERT_SHOW";
                                             // Asks for the show data (descricao, tipo, data_hora, duracao, local, localidade, pais, classificacao_etaria, visivel)
@@ -645,4 +646,90 @@ public class ThreadEnvia extends Thread {
             System.out.println("      " + e.getMessage());
         }
     }
+
+    public static void lerFicheiroEspetaculos() {
+        File ficheiro = new File("espetaculos.txt");
+        Espetaculo espetaculo = new Espetaculo();
+        // read line by line
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(ficheiro));
+            String linha = br.readLine();
+            int flag = 0;
+            while (linha != null) {
+                try {
+                    String[] dados = linha.split(";");
+                    for(int i = 0; i < dados.length; i++){
+                        // remove every “ and ” from the string
+                        dados[i] = dados[i].replaceAll("”", "");
+                        dados[i] = dados[i].replaceAll("“", "");
+                        dados[i] = dados[i].replaceAll("\"", "");
+                    }
+                    if(flag == 1){
+                        espetaculo.addFila(dados[0]);
+                        for(int i = 1; i < dados.length; i++){
+                            String[] lugar_preco = dados[i].split(":");
+                            espetaculo.addLugar(dados[0], Integer.parseInt(lugar_preco[0]), Integer.parseInt(lugar_preco[1]));
+                        }
+                    }
+                    switch (dados[0]) {
+                        case "Designação":
+                            espetaculo.setDesignacao(dados[1]);
+                            break;
+                        case "Tipo":
+                            espetaculo.setTipo(dados[1]);
+                            break;
+                        case "Data": {
+                            StringBuilder data = new StringBuilder();
+                            for (int i = 1; i < dados.length; i++) {
+                                data.append(dados[i] + "/");
+                                if (i == dados.length - 1) {
+                                    data.deleteCharAt(data.length() - 1);
+                                }
+                            }
+                            espetaculo.setData(data.toString());
+                            break;
+                        }
+                        case "Hora": {
+                            StringBuilder hora = new StringBuilder();
+                            for (int i = 1; i < dados.length; i++) {
+                                hora.append(dados[i] + ":");
+                                if (i == dados.length - 1) {
+                                    hora.deleteCharAt(hora.length() - 1);
+                                }
+                            }
+                            espetaculo.setHora(hora.toString());
+                            break;
+                        }
+                        case "Duração":
+                            espetaculo.setDuracao(Integer.parseInt(dados[1]));
+                            break;
+                        case "Local":
+                            espetaculo.setLocal(dados[1]);
+                            break;
+                        case "Localidade":
+                            espetaculo.setLocalidade(dados[1]);
+                            break;
+                        case "País":
+                            espetaculo.setPais(dados[1]);
+                            break;
+                        case "Classificação etária":
+                            espetaculo.setClassificacao_etaria(Integer.parseInt(dados[1]));
+                            break;
+                        case "Fila":
+                            flag = 1;
+                            break;
+                    }
+                } catch (Exception e) {
+                    continue;
+                }
+                linha = br.readLine();
+            }
+            System.out.println(espetaculo);
+        } catch (FileNotFoundException e) {
+            System.out.println("[ ! ] File not found");
+        } catch (IOException e) {
+            System.out.println("[ ! ] Error reading file");
+        }
+    }
+
 }
