@@ -1,8 +1,14 @@
 package Client;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.HashMap;
 
-public class Espetaculo {
+public class Espetaculo implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 3L;
+
     private String designacao;
     private String tipo;
     private String data;
