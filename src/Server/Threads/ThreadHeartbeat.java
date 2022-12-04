@@ -143,8 +143,6 @@ public class ThreadHeartbeat extends Thread {
                         DatagramPacket datagramPacket = new DatagramPacket(bOut.toByteArray(), bOut.size(), server.ipGroup, server.MULTICAST_PORT);
                         server.ms.send(datagramPacket);
 
-                        // FIXME: pedir ao servidor a base de dados atualizada
-
                         Socket s = new Socket(hb.getIp(), hb.getPort());
                         ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
                         String[] array = {"GET_DATABASE"};
