@@ -176,8 +176,6 @@ public class ThreadCliente extends Thread{
     }
 
     private void select_seats(String seatsWanted) throws IOException {
-        // Select seats
-        // Send confirmation
         try {
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
@@ -215,10 +213,11 @@ public class ThreadCliente extends Thread{
             Statement stmt = server.dbConn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM lugar WHERE espetaculo_id = " + argShowID);
             ArrayList<String> seats = new ArrayList<>();
+            out.writeObject("AVAILABLE_SEATS");
             while (rs.next()) {
                 seats.add(rs.getString("id"));
             }
-            out.writeObject(seats.toString());
+            out.writeObject(seats);
             out.flush();
             showID = argShowID;
         } catch (SQLException | IOException e) {
@@ -239,7 +238,7 @@ public class ThreadCliente extends Thread{
             ArrayList<String> shows = new ArrayList<>();
             out.writeObject("SHOW_SELECTED");
             while (rs.next()) {
-                String show = (rs.getString("descricao") + " " + rs.getString("tipo") + " " + rs.getString("data_hora") + " " + rs.getString("local") + " " + rs.getString("localidade"));
+                String show = ("\nShow description: " + rs.getString("descricao") + "\t" + "Show type: " + rs.getString("tipo") + "\t" + "Show date and time: " + rs.getString("data_hora") + "\t" + "Show locale: " + rs.getString("local") + "\t" + "Show locality: " + rs.getString("localidade"));
                 shows.add(show);
             }
             out.writeObject(shows);
@@ -283,10 +282,11 @@ public class ThreadCliente extends Thread{
                 format += " AND pais LIKE '%" + filters.get("pais") + "%'";
             }
             System.out.println(format);
+            out.writeObject("SHOW_FOUND");
             rs = stmt.executeQuery(format);
             while (rs.next()) {
                 out.writeObject("SHOW_FOUND");
-                String result = (rs.getString("id") + " " + rs.getString("descricao") + " " + rs.getString("tipo") + " " + rs.getString("data_hora") + " " + rs.getString("localidade") + " " + rs.getString("classificacao_etaria")); // TODO: To be improved
+                String result = ("Show ID: " + rs.getString("id") + "\t" + "Show description: " +  rs.getString("descricao") + "\t" + "Show type: " + rs.getString("tipo") + "\t" + "Show date and time: " + rs.getString("data_hora") + "\t" + "Show locale: " + rs.getString("localidade") + "\t" + "Show age rating: " + rs.getString("classificacao_etaria")); // TODO: To be improved
                 shows.add(result);
             }
             out.writeObject(shows);

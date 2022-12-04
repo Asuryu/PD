@@ -256,7 +256,7 @@ public class ThreadEnvia extends Thread {
                                             }
                                             break;
                                         case 9:
-                                            System.out.print("[ * ] ADMIN\n\t[ * ] PAY \n");
+                                            System.out.print("\n[ * ] ADMIN\n\t[ * ] PAY \n");
                                             String[] paying = new String[2];
                                             paying[0] = "PAY";
                                             System.out.print("[ · ] Reservation ID: ");
@@ -277,7 +277,7 @@ public class ThreadEnvia extends Thread {
                                             }
                                             break;
                                         case 10:
-                                            System.out.print("[ * ]ADMIN\n\t[ * ] INSERT SHOW \n");
+                                            System.out.print("\n[ * ]ADMIN\n\t[ * ] INSERT SHOW \n");
                                             String[] ins = new String[10];
                                             ins[0] = "INSERT_SHOW";
                                             // Asks for the show data (descricao, tipo, data_hora, duracao, local, localidade, pais, classificacao_etaria, visivel)
@@ -315,7 +315,7 @@ public class ThreadEnvia extends Thread {
                                             }
                                             break;
                                         case 11:
-                                            System.out.print("[ * ] ADMIN\n\t[ * ] REMOVE SHOW \n"); // TODO: Check later, not working
+                                            System.out.print("\n[ * ] ADMIN\n\t[ * ] REMOVE SHOW \n"); // TODO: Check later, not working
                                             String[] remov = new String[2];
                                             remov[0] = "REMOVE_SHOW";
                                             System.out.print("[ · ] Show ID: ");
@@ -382,7 +382,7 @@ public class ThreadEnvia extends Thread {
                                                     }
                                                     break;
                                                 case 2:
-                                                    System.out.print("[ * ] USER\n\t[ * ] PAYMENT LIST\n");
+                                                    System.out.print("\n[ * ] USER\n\t[ * ] PAYMENT LIST\n");
                                                     String[] payments = new String[1];
                                                     payments[0] = "AWAITING_PAYMENT_CONFIRMATION";
                                                     oos.writeObject(payments);
@@ -407,7 +407,7 @@ public class ThreadEnvia extends Thread {
                                                     }
                                                     break;
                                                 case 3:
-                                                    System.out.print("[ * ] USER\n\t[ * ] PAID RESERVATIONS\n");
+                                                    System.out.print("\n[ * ] USER\n\t[ * ] PAID RESERVATIONS\n");
                                                     String[] paymentsP = new String[1];
                                                     paymentsP[0] = "PAYMENT_CONFIRMED";
                                                     oos.writeObject(paymentsP);
@@ -433,7 +433,7 @@ public class ThreadEnvia extends Thread {
 
                                                     break;
                                                 case 4:
-                                                    System.out.print("[ * ] USER\n\t[ * ] SEARCH AND LIST SHOWS\n");
+                                                    System.out.print("\n[ * ] USER\n\t[ * ] SEARCH AND LIST SHOWS\n");
                                                     String[] f = new String[5];
                                                     f[0] = "SHOWS_LIST_SEARCH";
                                                     // Filters to search
@@ -467,7 +467,7 @@ public class ThreadEnvia extends Thread {
                                                     }
                                                     break;
                                                 case 5:
-                                                    System.out.print("[ * ] USER\n\t[ * ] SELECT SHOW \n");
+                                                    System.out.print("\n[ * ] USER\n\t[ * ] SELECT SHOW \n");
                                                     String[] s = new String[1];
                                                     s[0] = "SELECT_SHOW";
                                                     oos.writeObject(s);
@@ -492,11 +492,10 @@ public class ThreadEnvia extends Thread {
                                                     }
                                                     break;
                                                 case 6:
-
-                                                    System.out.print("[ * ] USER\n\t[ * ] SEATS AND PRICE \n");
-                                                    String[] pp = new String[10];
+                                                    System.out.print("\n[ * ] USER\n\t[ * ] SEATS AND PRICE \n");
+                                                    String[] pp = new String[2];
                                                     pp[0] = "AVAILABLE_SEATS_AND_PRICE";
-                                                    System.out.println("[ · ] Type the desired seats [Separate the seats with commas]: ");
+                                                    System.out.print("[ · ] Show ID: ");
                                                     pp[1] = sc.nextLine();
                                                     oos.writeObject(pp);
                                                     oos.flush();
@@ -518,9 +517,9 @@ public class ThreadEnvia extends Thread {
                                                     }
                                                     break;
                                                 case 7:
-                                                    System.out.print("[ * ] USER\n\t[ * ] SELECT SEATS \n");
+                                                    System.out.print("\n[ * ] USER\n\t[ * ] SELECT SEATS \n");
                                                     String[] pla = new String[2];
-                                                    pla[0] = "AVAILABLE_SEATS_AND_PRICE";
+                                                    pla[0] = "select_seats";
                                                     System.out.println("[ · ] Type the desired seats [Separate the seats with commas]: ");
                                                     pla[1] = sc.nextLine();
                                                     oos.writeObject(pla);
@@ -543,7 +542,7 @@ public class ThreadEnvia extends Thread {
                                                     }
                                                     break;
                                                 case 8:
-                                                    System.out.print("[ * ] USER\n\t[ * ] PAY\n");
+                                                    System.out.print("\n[ * ] USER\n\t[ * ] PAY\n");
                                                     String[] paying = new String[2];
                                                     paying[0] = "PAY";
                                                     System.out.print("[ · ] Reservation ID: ");
@@ -564,7 +563,7 @@ public class ThreadEnvia extends Thread {
                                                     }
                                                     break;
                                                 case 9:
-                                                    System.out.print("[ * ] USER\n\t[ * ] CANCEL RESERVATION\n");
+                                                    System.out.print("\n * ] USER\n\t[ * ] CANCEL RESERVATION\n");
                                                     String[] cancel = new String[2];
                                                     cancel[0] = "CANCEL_RESERVATION";
                                                     System.out.print("[ · ] Reservation ID: ");
