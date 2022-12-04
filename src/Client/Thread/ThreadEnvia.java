@@ -55,7 +55,7 @@ public class ThreadEnvia extends Thread {
                                 do {
                                     do {
                                         opt2 = tui.logedMenuAdmin();
-                                    }while(opt2 < 1 || opt2 > 11);
+                                    }while(opt2 < 1 || opt2 > 12);
                                     switch (opt2) {
                                         case 1:
                                             String[] sendingSTREDITADMIN = new String[4];
@@ -145,18 +145,20 @@ public class ThreadEnvia extends Thread {
                                             oos.writeObject(sendingSTRSEARCH);
                                             oos.flush();
                                             String response6 = (String) ois.readObject();
+                                            System.out.println(response6);
                                             switch (response6) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
                                                 default:
-                                                    ArrayList response7 = (ArrayList) ois.readObject();
+                                                    ArrayList<String> response7 = (ArrayList<String>) ois.readObject();
                                                     if (response7.size() == 0)
                                                         System.out.print("[ ! ] No shows found with the given filters\n");
                                                     else {
                                                         System.out.print("[ * ] Shows found: ");
-                                                        System.out.println(response7);
-                                                        System.out.println("\n");
+                                                        for(String s : response7){
+                                                            System.out.println(s);
+                                                        }
                                                     }
                                                     break;
                                             }
@@ -317,7 +319,7 @@ public class ThreadEnvia extends Thread {
                                             }
                                             break;
                                         case 11:
-                                            System.out.print("\n[ * ] ADMIN\n\t[ * ] REMOVE SHOW \n"); // TODO: Check later, not working
+                                            System.out.print("\n[ * ] ADMIN\n\t[ * ] REMOVE SHOW \n");
                                             String[] remov = new String[2];
                                             remov[0] = "REMOVE_SHOW";
                                             System.out.print("[ · ] Show ID: ");
@@ -341,8 +343,10 @@ public class ThreadEnvia extends Thread {
                                             }
                                             break;
                                         case 12:
-                                            // Exit submenu and go back to main menu
-                                            // TODO: To be implemented
+                                            String[] logout = new String[1];
+                                            logout[0] = "LOGOUT";
+                                            oos.writeObject(logout);
+                                            oos.flush();
                                             exit = true;
                                             break;
                                         default:
@@ -589,8 +593,10 @@ public class ThreadEnvia extends Thread {
                                             }
                                             break;
                                         case 10:
-                                            // Exit sub-menu and return to main menu
-                                            // TODO: To be implemented
+                                            String[] logout = new String[1];
+                                            logout[0] = "LOGOUT";
+                                            oos.writeObject(logout);
+                                            oos.flush();
                                             exit = true;
                                             break;
                                         default:
