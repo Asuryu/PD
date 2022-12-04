@@ -10,6 +10,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class ThreadCliente extends Thread{
@@ -58,6 +61,7 @@ public class ThreadCliente extends Thread{
                     case "PAY" -> pay(Integer.parseInt(arrayRequest[1]));
                     case "REMOVE_SHOW" -> removeShow(Integer.parseInt(arrayRequest[1]));
                     case "INSERT_SHOW" -> insertShow(arrayRequest[1]);
+                    case "LOGOUT" -> logout();
                     default -> client.close();
                 }
                 synchronized (server.activeConnections) {
@@ -223,7 +227,8 @@ public class ThreadCliente extends Thread{
             out.writeObject("AVAILABLE_SEATS");
             out.flush();
             while (rs.next()) {
-                seats.add(rs.getString("id"));
+                String result = rs.getString("id") + "," + rs.getString("fila") + "," + rs.getString("assento") + "," + rs.getString("preco");
+                seats.add(result);
             }
             out.writeObject(seats);
             out.flush();
@@ -242,7 +247,10 @@ public class ThreadCliente extends Thread{
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
             // SQL query to get all shows with at least 1 day from now until the show starts
-            ResultSet rs = stmt.executeQuery("SELECT * FROM espetaculo WHERE data_hora =+ 1");
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            LocalDateTime now = LocalDateTime.now();
+            String format = "SELECT * FROM espetaculo WHERE visivel = 1 AND data_hora > '" + dtf.format(now.plusDays(1)) + "'";
+            ResultSet rs = stmt.executeQuery(format);
             ArrayList<String> shows = new ArrayList<>();
             out.writeObject("SHOW_SELECTED");
             out.flush();
@@ -295,8 +303,6 @@ public class ThreadCliente extends Thread{
             out.flush();
             rs = stmt.executeQuery(format);
             while (rs.next()) {
-                out.writeObject("SHOW_FOUND");
-                out.flush();
                 String result = ("Show ID: " + rs.getString("id") + "\t" + "Show description: " +  rs.getString("descricao") + "\t" + "Show type: " + rs.getString("tipo") + "\t" + "Show date and time: " + rs.getString("data_hora") + "\t" + "Show locale: " + rs.getString("localidade") + "\t" + "Show age rating: " + rs.getString("classificacao_etaria")); // TODO: To be improved
                 shows.add(result);
             }
@@ -458,4 +464,20 @@ public class ThreadCliente extends Thread{
             System.out.println("      " + e.getMessage());
         }
     }
+
+    private void logout(){
+        try {
+            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+            Statement stmt = server.dbConn.createStatement();
+            String updateQuery = "UPDATE utilizador SET autenticado = 0 WHERE id = " + clientID;
+            stmt.executeUpdate(updateQuery);
+            server.incDbVersion(updateQuery);
+            System.out.println("[ * ] User logged out");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("[ ! ] An error has occurred while logging out user");
+            System.out.println("      " + e.getMessage());
+        }
+    }
+
 }
