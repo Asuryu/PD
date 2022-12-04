@@ -235,7 +235,7 @@ public class ThreadEnvia extends Thread {
                                             }
                                             break;
                                         case 8:
-                                            System.out.print("\n[ * ] ADMIN\n\t[ * ] REMOVE RESERVATION \n");
+                                            System.out.print("\n[ * ] ADMIN\n\t[ * ] CANCEL RESERVATION \n");
                                             String[] rem = new String[2];
                                             rem[0] = "REMOVE_RESERVATION";
                                             System.out.print("[ · ] Reservation ID: ");
@@ -354,7 +354,7 @@ public class ThreadEnvia extends Thread {
                                         do {
                                             do {
                                                 opt3 = tui.logedMenu();
-                                            }while(opt3 < 1 || opt3 > 9);
+                                            }while(opt3 < 1 || opt3 > 11);
                                             switch (opt3) {
                                                 case 1:
                                                     String[] sendingSTREDITADMIN = new String[4];
@@ -563,7 +563,7 @@ public class ThreadEnvia extends Thread {
                                                     }
                                                     break;
                                                 case 9:
-                                                    System.out.print("\n * ] USER\n\t[ * ] CANCEL RESERVATION\n");
+                                                    System.out.print("\n[ * ] USER\n\t[ * ] CANCEL RESERVATION\n");
                                                     String[] cancel = new String[2];
                                                     cancel[0] = "CANCEL_RESERVATION";
                                                     System.out.print("[ · ] Reservation ID: ");
@@ -638,6 +638,7 @@ public class ThreadEnvia extends Thread {
             }
         } catch (SocketException | EOFException e) {
             System.out.println("[ ! ] The server has closed the connection");
+            e.printStackTrace();
         } catch (Exception e) {
             System.out.println("[ ! ] An error has occurred while sending a message");
             e.printStackTrace();

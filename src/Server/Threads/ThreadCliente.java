@@ -108,9 +108,11 @@ public class ThreadCliente extends Thread{
                 stmt.executeUpdate(format);
                 server.incDbVersion(format);
                 out.writeObject("SHOW_REMOVED_SUCCESSFULLY");
+                out.flush();
             }
         } catch (SQLException | IOException e) {
             out.writeObject("ERROR_OCCURED");
+            out.flush();
             System.out.println("[ ! ] An error has occurred while removing show");
             System.out.println("      " + e.getMessage());
         }
@@ -126,9 +128,11 @@ public class ThreadCliente extends Thread{
                 stmt.executeUpdate(format);
                 server.incDbVersion(format);
                 out.writeObject("SHOW_INSERTED_SUCCESSFULLY");
+                out.flush();
             }
         }catch (SQLException | IOException e) {
             out.writeObject("ERROR_OCCURED");
+            out.flush();
             System.out.println("[ ! ] An error has occurred while inserting show");
             System.out.println("      " + e.getMessage());
         }
@@ -142,8 +146,10 @@ public class ThreadCliente extends Thread{
             stmt.executeUpdate(format);
             server.incDbVersion(format);
             out.writeObject("PAYMENT_CONFIRMED");
+            out.flush();
         }catch (SQLException e){
             out.writeObject("ERROR_OCCURED");
+            out.flush();
             System.out.println("[ ! ] An error has occurred while paying reservation");
             System.out.println("      " + e.getMessage());
         }
@@ -154,19 +160,18 @@ public class ThreadCliente extends Thread{
         try{
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
-            String format = "DELETE FROM reserva WHERE id=" + reservationID;
-            String format2 = "DELETE FROM reserva_lugar WHERE id_reserva=" + reservationID;
-            if(stmt.executeUpdate(format) == 1){
+            String format = "DELETE FROM reserva WHERE id=" + reservationID + " AND pago = 0";
+            String format2 = "DELETE FROM reserva_lugar WHERE id_reserva=" + reservationID+ " AND pago = 0";
+            if(stmt.executeUpdate(format) != 0){
                 out.writeObject("RESERVA_SUCCESSFULLY_REMOVED");
                 out.flush();
                 server.incDbVersion(format);
             }
-            if(stmt.executeUpdate(format2) == 1){
+            if(stmt.executeUpdate(format2) != 0){
                 out.writeObject("RESERVA_LUGAR_SUCCESSFULLY_REMOVED");
                 out.flush();
                 server.incDbVersion(format2);
             }
-
         }catch (SQLException e){
             out.writeObject("ERROR_OCCURED");
             out.flush();
@@ -180,7 +185,9 @@ public class ThreadCliente extends Thread{
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
             String[] seats = seatsWanted.split(",");
-            String format = "INSERT INTO reserva (data_hora, pago, id_utilizador, id_espetaculo) VALUES (NOW(), 0, clientID, showID)";
+            System.out.println("Seats wanted: " + seatsWanted);
+            String format = "INSERT INTO reserva (data_hora, pago, id_utilizador, id_espetaculo) VALUES ('now', 0, %d, %d)";
+            format = String.format(format, clientID, showID);
             stmt.executeUpdate(format);
             server.incDbVersion(format);
             ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
@@ -214,6 +221,7 @@ public class ThreadCliente extends Thread{
             ResultSet rs = stmt.executeQuery("SELECT * FROM lugar WHERE espetaculo_id = " + argShowID);
             ArrayList<String> seats = new ArrayList<>();
             out.writeObject("AVAILABLE_SEATS");
+            out.flush();
             while (rs.next()) {
                 seats.add(rs.getString("id"));
             }
@@ -237,6 +245,7 @@ public class ThreadCliente extends Thread{
             ResultSet rs = stmt.executeQuery("SELECT * FROM espetaculo WHERE data_hora =+ 1");
             ArrayList<String> shows = new ArrayList<>();
             out.writeObject("SHOW_SELECTED");
+            out.flush();
             while (rs.next()) {
                 String show = ("\nShow description: " + rs.getString("descricao") + "\t" + "Show type: " + rs.getString("tipo") + "\t" + "Show date and time: " + rs.getString("data_hora") + "\t" + "Show locale: " + rs.getString("local") + "\t" + "Show locality: " + rs.getString("localidade"));
                 shows.add(show);
@@ -283,9 +292,11 @@ public class ThreadCliente extends Thread{
             }
             System.out.println(format);
             out.writeObject("SHOW_FOUND");
+            out.flush();
             rs = stmt.executeQuery(format);
             while (rs.next()) {
                 out.writeObject("SHOW_FOUND");
+                out.flush();
                 String result = ("Show ID: " + rs.getString("id") + "\t" + "Show description: " +  rs.getString("descricao") + "\t" + "Show type: " + rs.getString("tipo") + "\t" + "Show date and time: " + rs.getString("data_hora") + "\t" + "Show locale: " + rs.getString("localidade") + "\t" + "Show age rating: " + rs.getString("classificacao_etaria")); // TODO: To be improved
                 shows.add(result);
             }
@@ -307,6 +318,7 @@ public class ThreadCliente extends Thread{
             ResultSet rs;
             if(whatToList.equals("AWAITING_PAYMENT_CONFIRMATION")){
                 out.writeObject("AWAITING_PAYMENT_CONFIRMATION");
+                out.flush();
                 rs = stmt.executeQuery("SELECT * FROM reserva WHERE pago = 0 AND id_utilizador = " + clientID);
                 while(rs.next()){
                     ResultSet rs2 = stmt.executeQuery("SELECT * FROM espetaculos WHERE id = " + rs.getString("id_espetaculo"));
@@ -320,6 +332,7 @@ public class ThreadCliente extends Thread{
                 out.flush();
             }else if(whatToList.equals("PAYMENT_CONFIRMED")){
                 out.writeObject("PAYMENT_CONFIRMED");
+                out.flush();
                 rs = stmt.executeQuery("SELECT * FROM reserva WHERE pago = 1 AND id_utilizador = " + clientID);
                 while(rs.next()){
                     String payment = "Reservation ID: " + rs.getString("id") + " | Show: " + rs.getString("id_espetaculo") + " | Date: " + rs.getString("data_hora") + " | Price: " + rs.getString("preco");

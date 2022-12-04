@@ -53,7 +53,7 @@ public class TUI {
         System.out.println("\t[ 5 ] - Select show");
         System.out.println("\t[ 6 ] - List seats and prices");
         System.out.println("\t[ 7 ] - Select seats");
-        System.out.println("\t[ 8 ] - Remove reservation");
+        System.out.println("\t[ 8 ] - Cancel reservation");
         System.out.println("\t[ 9 ] - Pay reservation");
         System.out.println("\t[ 10 ] - Insert show");
         System.out.println("\t[ 11 ] - Remove show");
@@ -74,7 +74,7 @@ public class TUI {
         System.out.println("\t[ 6 ] - List seats and prices");
         System.out.println("\t[ 7 ] - Select seats");
         System.out.println("\t[ 8 ] - Pay reservation");
-        System.out.println("\t[ 9 ] - Remove reservation");
+        System.out.println("\t[ 9 ] - Cancel reservation");
         System.out.println("\t[ 10 ] - Exit");
         System.out.print("[ * ] OPTION: ");
             option = sc.nextInt();
