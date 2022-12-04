@@ -60,7 +60,6 @@ public class TUI {
         System.out.println("\t[ 12 ] - Exit");
         System.out.print("[ * ] OPTION: ");
         option = sc.nextInt();
-
         return option;
 
     }
