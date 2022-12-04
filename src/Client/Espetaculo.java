@@ -53,6 +53,10 @@ public class Espetaculo implements Serializable {
         return hora;
     }
 
+    public String getDateTime() {
+        return data + " " + hora;
+    }
+
     public int getDuracao() {
         return duracao;
     }
