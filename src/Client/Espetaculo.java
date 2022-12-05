@@ -45,14 +45,6 @@ public class Espetaculo implements Serializable {
         return tipo;
     }
 
-    public String getData() {
-        return data;
-    }
-
-    public String getHora() {
-        return hora;
-    }
-
     public String getDateTime() {
         return data + " " + hora;
     }
@@ -116,10 +108,6 @@ public class Espetaculo implements Serializable {
 
     public void setClassificacao_etaria(int classificacao_etaria) {
         this.classificacao_etaria = classificacao_etaria;
-    }
-
-    public void setMapa_lugares(HashMap<String, HashMap<Integer, Integer>> mapa_lugares) {
-        this.mapa_lugares = mapa_lugares;
     }
 
     public void addFila(String fila){
