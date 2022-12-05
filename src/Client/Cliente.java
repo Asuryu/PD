@@ -9,7 +9,8 @@ import java.io.ObjectInputStream;
 import java.net.*;
 import java.util.ArrayList;
 
-public class Clientev2 {
+@SuppressWarnings("ALL")
+public class Cliente {
 
     private final String UDP_IP;
     private final int UDP_PORT;
@@ -21,9 +22,11 @@ public class Clientev2 {
     private Boolean isLoggedIn = false;
     private Boolean isAdmin = false;
 
-    public Clientev2(String ip, int port) throws Exception {
+    public Cliente(String ip, int port) throws Exception {
         this.UDP_IP = ip;
         this.UDP_PORT = port;
+
+        mostraASCII();
 
         ds = new DatagramSocket();
         try{
@@ -43,6 +46,7 @@ public class Clientev2 {
         // try to connect to the first server in the list
         // if it fails, try the next one
         for (Heartbeat server : servers) {
+            System.out.println("[ * ] Trying to connect to " + server.getIp() + ":" + server.getPort());
             try {
                 Socket socket = new Socket(server.getIp(), server.getPort());
                 System.out.println("[ * ] Connected to " + server.getIp() + ":" + server.getPort());
@@ -59,7 +63,7 @@ public class Clientev2 {
 
     public static void main(String[] args) {
         try{
-            new Clientev2(args[0], Integer.parseInt(args[1]));
+            new Cliente(args[0], Integer.parseInt(args[1]));
         } catch (Exception e) {
             System.out.println("[ ! ] An error has occurred while setting up the client");
             System.out.println("      " + e.getMessage());
