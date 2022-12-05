@@ -18,7 +18,6 @@ public class ThreadCliente extends Thread{
     private final Socket client;
     private int clientID;
     private int showID = -1;
-    private int reservationID;
     private boolean admin = false;
     private ObjectOutputStream out;
     private ObjectInputStream in;
@@ -123,10 +122,6 @@ public class ThreadCliente extends Thread{
     private void insertShow() throws IOException {
         try{
             if(admin){
-                if(showID == -1){
-                    out.writeObject("NO_SHOW_SELECTED");
-                    out.flush();
-                }
                 out.writeObject("SEND_SHOW_DATA");
                 out.flush();
                 Espetaculo espetaculo = (Espetaculo)in.readObject();
@@ -137,13 +132,16 @@ public class ThreadCliente extends Thread{
                         espetaculo.getLocal() + "', '" + espetaculo.getLocalidade() + "', '" + espetaculo.getPais() + "', '" + espetaculo.getClassificacao_etaria() + "', '" + 0 + "')";
                 stmt.executeUpdate(format);
                 server.incDbVersion(format);
+                // get latest row insert id
+                ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ROWID()");
+                int insertedShowID = rs.getInt(1);
 
                 HashMap<String, HashMap<Integer, Integer>> mapa_lugares = espetaculo.getMapa_lugares();
 
                 for (String fila : mapa_lugares.keySet()) {
                     HashMap<Integer, Integer> lugares = mapa_lugares.get(fila);
                     for (Integer lugar : lugares.keySet()) {
-                        format = "INSERT INTO lugar (fila, assento, preco, espetaculo_id) VALUES ('" + fila + "', '" + lugar + "', '" + lugares.get(lugar) + "', '" + showID + "')";
+                        format = "INSERT INTO lugar (fila, assento, preco, espetaculo_id) VALUES ('" + fila + "', '" + lugar + "', '" + lugares.get(lugar) + "', '" + insertedShowID + "')";
                         stmt.executeUpdate(format);
                         server.incDbVersion(format);
                     }
@@ -188,6 +186,7 @@ public class ThreadCliente extends Thread{
             out.writeObject("RESERVA_SUCCESSFULLY_REMOVED");
             out.flush();
             server.incDbVersion(format);
+            server.incDbVersion(format2);
         }catch (SQLException e){
             out.writeObject("ERROR_OCCURED");
             out.flush();
@@ -209,18 +208,19 @@ public class ThreadCliente extends Thread{
             server.incDbVersion(format);
             ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ROWID()");
             rs.next();
-            reservationID = rs.getInt(1);
+            int reservationID = rs.getInt(1);
             HashMap<String, ArrayList<String>> seatsMap = new HashMap<>();
             seatsMap.put("RESERVED", new ArrayList<>());
             seatsMap.put("ALREADY_RESERVED", new ArrayList<>());
             for (String seat : seats) {
-                ResultSet rs2 = stmt.executeQuery("SELECT id_lugar FROM reserva_lugar WHERE id_lugar =" + seat);
+                ResultSet rs2 = stmt.executeQuery("SELECT id_lugar FROM reserva_lugar WHERE id_lugar = " + seat);
                 if(rs2.next()){
-                     seatsMap.get("ALREADY_RESERVED").add(seat);
+                    seatsMap.get("ALREADY_RESERVED").add(seat);
                 }else {
                     String format2 = "INSERT INTO reserva_lugar (id_reserva, id_lugar) VALUES (%d, %s)";
                     format2 = String.format(format2, reservationID, seat);
-                    seatsMap.get("ALREADY_RESERVED").add(seat);
+                    stmt.executeUpdate(format2);
+                    seatsMap.get("RESERVED").add(seat);
                     server.incDbVersion(format2);
                 }
             }
@@ -312,7 +312,7 @@ public class ThreadCliente extends Thread{
             out.flush();
             rs = stmt.executeQuery(format);
             while (rs.next()) {
-                String result = ("Show ID: " + rs.getString("id") + "\t" + "Show description: " +  rs.getString("descricao") + "\t" + "Show type: " + rs.getString("tipo") + "\t" + "Show date and time: " + rs.getString("data_hora") + "\t" + "Show locale: " + rs.getString("localidade") + "\t" + "Show age rating: " + rs.getString("classificacao_etaria")); // TODO: To be improved
+                String result = ("Show ID: " + rs.getString("id") + "\t" + "Show description: " +  rs.getString("descricao") + "\t" + "Show type: " + rs.getString("tipo") + "\t" + "Show date and time: " + rs.getString("data_hora") + "\t" + "Show locale: " + rs.getString("localidade") + "\t" + "Show age rating: " + rs.getString("classificacao_etaria"));
                 shows.add(result);
             }
             out.writeObject(shows);
@@ -334,16 +334,11 @@ public class ThreadCliente extends Thread{
             if(whatToList.equals("AWAITING_PAYMENT_CONFIRMATION")){
                 out.writeObject("AWAITING_PAYMENT_CONFIRMATION");
                 out.flush();
+                System.out.println(clientID);
                 rs = stmt.executeQuery("SELECT * FROM reserva WHERE pago = 0 AND id_utilizador = " + clientID);
                 while(rs.next()){
-                    String payment = "Reservation ID: " + rs.getString("id");
-                    ResultSet rs2 = stmt.executeQuery("SELECT * FROM espetaculo WHERE id = " + rs.getString("id_espetaculo"));
-                    rs2.next();
-                    payment += " | Show: " + rs2.getString("descricao") + " | Date: " + rs2.getString("data_hora");
-                    ResultSet rs3 = stmt.executeQuery("SELECT * FROM lugar WHERE espetaculo_id = " + rs2.getString("id"));
-                    rs3.next();
-                    payment += " | Price: " + rs3.getString("preco");
-                    payments.add(payment);
+                    String result = "ID: " + rs.getString("id");
+                    payments.add(result);
                 }
                 out.writeObject(payments);
                 out.flush();
@@ -458,13 +453,12 @@ public class ThreadCliente extends Thread{
                 out.flush();
             } else {
                 String format = "INSERT INTO utilizador (nome, username, password) VALUES ('%s', '%s', '%s')";
-                stmt.executeUpdate(String.format(format, nome, username, password));
+                format = String.format(format, nome, username, password);
+                stmt.executeUpdate(format);
+                server.incDbVersion(format);
                 System.out.println("[ * ] User registered");
                 out.writeObject("REGISTER_SUCCESSFUL");
                 out.flush();
-                String updateQuery = "UPDATE utilizador SET autenticado = 1 WHERE username = '" + username + "'";
-                stmt.executeUpdate(updateQuery);
-                server.incDbVersion(updateQuery);
             }
             rs.close();
             out.flush();
