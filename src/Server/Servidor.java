@@ -11,6 +11,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings({"ALL", "unchecked"})
 public class Servidor {
 
     public final String DATABASE_ORIGINAL = "PD-2022-23-TP.db"; // Name of the original database file
@@ -33,8 +34,8 @@ public class Servidor {
     public SocketAddress sa; // Socket address
     public NetworkInterface ni; // Network interface
 
-    public static final int INITIAL_HEARTBEAT_WAIT = 2 * 1000; // Time to wait for heartbeats in the beginning of the server (in milliseconds)
-    public static final int HEARTBEAT_INTERVAL = 200; // Interval between heartbeats (in milliseconds)
+    public static final int INITIAL_HEARTBEAT_WAIT = 30 * 1000; // Time to wait for heartbeats in the beginning of the server (in milliseconds)
+    public static final int HEARTBEAT_INTERVAL = 10 * 1000; // Interval between heartbeats (in milliseconds)
 
     public Boolean isAvailable = true; // Flag to indicate if the server is available to receive connections
     public final ArrayList<Thread> threads = new ArrayList<>(); // List of threads
@@ -116,44 +117,10 @@ public class Servidor {
             }
         }
 
-//        File copy = new File(DATABASES_PATH + DATABASE_NAME);
-//        if(!onlineServers.isEmpty()){
-//            // Get the server with the highest database version and the loweast load
-//            Heartbeat hb = onlineServers.stream()
-//                    .collect(Collectors.groupingBy(Heartbeat::getDbVersion, TreeMap::new, Collectors.toList()))
-//                    .lastEntry().getValue().stream()
-//                    .min(new HeartbeatComparatorLoad()).get();
-//
-//            // Removes servers with a lower database version
-//            onlineServers.removeIf(h -> h.getDbVersion() <= 1);
-//
-//            // Establishes a connection to the server with the highest database version and the loweast load
-//            // and requests a copy of the database
-//            if(!copy.exists() && !onlineServers.isEmpty()){
-//                System.out.println("[ * ] Requesting a copy of the database from " + hb.getIp() + ":" + hb.getPort());
-//                Socket s = new Socket("localhost", hb.getPort());
-//                ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-//                ObjectInputStream in = new ObjectInputStream(s.getInputStream());
-//                out.writeObject("GET_DATABASE"); // Envia a mensagem ao servidor a pedir a base de dados
-//                out.flush();
-//                HashMap<Integer, String> dbVersions = (HashMap<Integer, String>) in.readObject(); // Recebe a lista de versões da base de dados
-//                synchronized (this.dbVersions){
-//                    this.dbVersions.putAll(dbVersions);
-//                }
-//                System.out.println("[ · ] Received database from server " + s.getInetAddress().getHostAddress() + ":" + hb.getPort());
-//                out.close();
-//                in.close();
-//                s.close();
-//            }
-//        }
-//
-//        updateDatabase(dbVersions);
-
         ThreadTCP tcp = new ThreadTCP(this);
         ThreadAtendeClientes tac = new ThreadAtendeClientes(this);
         ThreadHeartbeat thb = new ThreadHeartbeat(this);
-        ThreadConsolaAdmin tca = new ThreadConsolaAdmin(this);
-        threads.add(tcp); threads.add(tac); threads.add(thb); threads.add(tca);
+        threads.add(tcp); threads.add(tac); threads.add(thb);
 
         for(Thread thrd : threads) {
             thrd.start();
