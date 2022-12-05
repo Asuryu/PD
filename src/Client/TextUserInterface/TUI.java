@@ -3,47 +3,12 @@ package Client.TextUserInterface;
 import java.util.Scanner;
 
 public class TUI {
-    private Scanner sc;
-    private boolean exit;
+    private final Scanner sc;
 
     public TUI() {
         sc = new Scanner(System.in);
-        exit = false;
     }
 
-    /*public String[] menuFiltros(){
-        String option;
-        String [] ft = new String[1];
-        do {
-            System.out.println("Filtros para pesquisa:");
-            System.out.println("Nome");
-            System.out.println("Localidade");
-            System.out.println("Genero");
-            System.out.println("Data");
-            System.out.println("Nada");
-            System.out.println("Nada");
-            option = sc.nextLine();
-            option.toLowerCase();
-            ft[0] = option + ",";
-            System.out.println(ft[0]);
-            switch (option) {
-                case "nome":
-                    System.out.print("Indique ");
-                    break;
-                case "genero":
-                    break;
-                case "localidade":
-                    break;
-                case "data":
-                    break;
-                case "nada":
-                    ft[0] = " ";
-                    break;
-            }
-        }while( option.toLowerCase() == "sair");
-        return ft;
-
-    }*/
     public int logedMenuAdmin() {
         int option;
         System.out.println("\t[ 1 ] - Edit profile");
@@ -64,6 +29,7 @@ public class TUI {
         return option;
 
     }
+
     public int logedMenu() {
         int option;
         System.out.println("\t[ 1 ] - Edit profile");

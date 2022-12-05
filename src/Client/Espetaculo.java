@@ -18,7 +18,7 @@ public class Espetaculo implements Serializable {
     private String localidade;
     private String pais;
     private int classificacao_etaria;
-    private HashMap<String, HashMap<Integer, Integer>> mapa_lugares;
+    private final HashMap<String, HashMap<Integer, Integer>> mapa_lugares;
 
     public Espetaculo(String designacao, String tipo, String data, String hora, int duracao, String local, String localidade, String pais, int classificacao_etaria, HashMap<String, HashMap<Integer, Integer>> mapa_lugares) {
         this.designacao = designacao;

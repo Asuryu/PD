@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
  * Classe que representa a thread que trata dos heartbeats
  * Esta thread em particular envia os heartbeats para o endereço multicast
  */
+@SuppressWarnings("ALL")
 public class ThreadHeartbeat extends Thread {
 
     protected final Servidor server;

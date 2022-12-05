@@ -1,7 +1,7 @@
 
         package Client.Thread;
 
-        import Client.Clientev2;
+        import Client.Cliente;
         import Client.Espetaculo;
         import Client.TextUserInterface.TUI;
 
@@ -13,16 +13,17 @@
         import java.util.HashMap;
         import java.util.Scanner;
 
+@SuppressWarnings("ALL")
 public class ThreadEnvia extends Thread {
 
-    private final Clientev2 cliente;
+    private final Cliente cliente;
     private final Socket s;
     private final ObjectOutputStream oos;
     private final ObjectInputStream ois;
     private final TUI tui = new TUI();
     private Boolean exit = false;
 
-    public ThreadEnvia(Clientev2 cliente, Socket s) throws IOException {
+    public ThreadEnvia(Cliente cliente, Socket s) throws IOException {
         this.s = s;
         this.cliente = cliente;
         oos = new ObjectOutputStream(s.getOutputStream());
@@ -89,19 +90,18 @@ public class ThreadEnvia extends Thread {
                                             oos.writeObject(payments);
                                             oos.flush();
                                             String r4 = (String) ois.readObject();
-                                            System.out.println(r4);
                                             switch (r4) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
-                                                default:
+                                                case "AWAITING_PAYMENT_CONFIRMATION":
                                                     ArrayList<String> response4 = (ArrayList<String>) ois.readObject();
                                                     if (response4.size() == 0)
                                                         System.out.print("[ ! ] No payments to confirm\n");
                                                     else {
                                                         System.out.print("[ * ] Payments to confirm: ");
                                                         System.out.println(response4);
-                                                        System.out.println("\n");
+                                                        System.out.println();
                                                     }
                                                     break;
                                             }
@@ -117,8 +117,8 @@ public class ThreadEnvia extends Thread {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
-                                                default:
-                                                    ArrayList response5 = (ArrayList) ois.readObject();
+                                                case "PAYMENT_CONFIRMED":
+                                                    ArrayList<String> response5 = (ArrayList<String>) ois.readObject();
                                                     if (response5.size() == 0)
                                                         System.out.print("[ ! ] Empty paid reservations list\n");
                                                     else {
@@ -150,7 +150,7 @@ public class ThreadEnvia extends Thread {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
-                                                default:
+                                                case "SHOW_FOUND":
                                                     ArrayList<String> response7 = (ArrayList<String>) ois.readObject();
                                                     if (response7.size() == 0)
                                                         System.out.print("[ ! ] No shows found with the given filters\n");
@@ -196,7 +196,7 @@ public class ThreadEnvia extends Thread {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
-                                                default:
+                                                case "AVAILABLE_SEATS":
                                                     ArrayList<String> response8 = (ArrayList<String>) ois.readObject();
                                                     if (response8.size() == 0)
                                                         System.out.print("[ * ] No seats found\n");
@@ -282,9 +282,6 @@ public class ThreadEnvia extends Thread {
                                                 case "SEND_SHOW_DATA":
                                                     oos.writeObject(espetaculo);
                                                     oos.flush();
-                                                case "NO_SHOW_SELECTED":
-                                                    System.out.println("[ ! ] No show selected\n");
-                                                    break;
                                                 case "SHOW_INSERTED_SUCCESSFULLY":
                                                     System.out.println("[ * ] Show inserted successfully\n");
                                                     break;
