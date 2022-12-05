@@ -52,7 +52,7 @@ public class ThreadCliente extends Thread{
                         }
                         shows_list_search(filters);
                     }
-                    case "SELECT_SHOW" -> select_show();
+                    case "SELECT_SHOW" -> select_show(Integer.parseInt(arrayRequest[1]));
                     case "AVAILABLE_SEATS_AND_PRICE" -> available_seats_and_price(Integer.parseInt(arrayRequest[1]));
                     case "SELECT_SEATS" -> select_seats(arrayRequest[1]);
                     case "REMOVE_RESERVATION" -> remove_reservation(Integer.parseInt(arrayRequest[1]));
@@ -163,7 +163,7 @@ public class ThreadCliente extends Thread{
         try{
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
-            String format = ("UPDATE reserva SET pago = 1 WHERE id = '" + reservationID + "' AND id_utilizador = '"+clientID+"'");
+            String format = ("UPDATE reserva SET pago = 1 WHERE id = " + reservationID + " AND id_utilizador = " + clientID);
             stmt.executeUpdate(format);
             server.incDbVersion(format);
             out.writeObject("PAYMENT_CONFIRMED");
@@ -181,18 +181,13 @@ public class ThreadCliente extends Thread{
         try{
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
-            String format = "DELETE FROM reserva WHERE id=" + reservationID + " AND pago = 0";
-            String format2 = "DELETE FROM reserva_lugar WHERE id_reserva=" + reservationID+ " AND pago = 0";
-            if(stmt.executeUpdate(format) != 0){
-                out.writeObject("RESERVA_SUCCESSFULLY_REMOVED");
-                out.flush();
-                server.incDbVersion(format);
-            }
-            if(stmt.executeUpdate(format2) != 0){
-                out.writeObject("RESERVA_LUGAR_SUCCESSFULLY_REMOVED");
-                out.flush();
-                server.incDbVersion(format2);
-            }
+            String format = "DELETE FROM reserva WHERE id= "+ reservationID +" AND id_utilizador = "+ clientID +" AND pago = 0";
+            String format2 = "DELETE FROM reserva_lugar WHERE id_reserva = " + reservationID;
+            stmt.executeUpdate(format);
+            stmt.executeUpdate(format2);
+            out.writeObject("RESERVA_SUCCESSFULLY_REMOVED");
+            out.flush();
+            server.incDbVersion(format);
         }catch (SQLException e){
             out.writeObject("ERROR_OCCURED");
             out.flush();
@@ -206,31 +201,39 @@ public class ThreadCliente extends Thread{
             server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
             Statement stmt = server.dbConn.createStatement();
             String[] seats = seatsWanted.split(",");
-            System.out.println("Seats wanted: " + seatsWanted);
-            String format = "INSERT INTO reserva (data_hora, pago, id_utilizador, id_espetaculo) VALUES ('now', 0, %d, %d)";
-            format = String.format(format, clientID, showID);
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            LocalDateTime now = LocalDateTime.now();
+            String format = "INSERT INTO reserva (data_hora, pago, id_utilizador, id_espetaculo) VALUES ('%s', 0, %d, %d)";
+            format = String.format(format, dtf.format(now), clientID, showID);
             stmt.executeUpdate(format);
             server.incDbVersion(format);
-            ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID()");
+            ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ROWID()");
             rs.next();
             reservationID = rs.getInt(1);
+            HashMap<String, ArrayList<String>> seatsMap = new HashMap<>();
+            seatsMap.put("RESERVED", new ArrayList<>());
+            seatsMap.put("ALREADY_RESERVED", new ArrayList<>());
             for (String seat : seats) {
-                String format2 = "INSERT INTO reserva_lugar (id_reserva, id_lugar) VALUES (resevationID, seat)";
-                if(stmt.executeUpdate(format2) == 0){
-                    out.writeObject("SEAT_"+ seat +"_ALREADY_RESERVED");
-                    out.flush();
-                    return;
+                ResultSet rs2 = stmt.executeQuery("SELECT id_lugar FROM reserva_lugar WHERE id_lugar =" + seat);
+                if(rs2.next()){
+                     seatsMap.get("ALREADY_RESERVED").add(seat);
                 }else {
-                    out.writeObject("SEAT_"+ seat +"_RESERVATION_SUCCESSFUL");
-                    out.flush();
+                    String format2 = "INSERT INTO reserva_lugar (id_reserva, id_lugar) VALUES (%d, %s)";
+                    format2 = String.format(format2, reservationID, seat);
+                    seatsMap.get("ALREADY_RESERVED").add(seat);
                     server.incDbVersion(format2);
                 }
             }
+            out.writeObject("RESERVATION_SUCCESSFULLY_MADE");
+            out.flush();
+            out.writeObject(seatsMap);
+            out.flush();
         } catch (SQLException e) {
             out.writeObject("ERROR_OCCURED");
             out.flush();
             System.out.println("[ ! ] An error has occurred while showing seats");
             System.out.println("      " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -244,7 +247,7 @@ public class ThreadCliente extends Thread{
             out.writeObject("AVAILABLE_SEATS");
             out.flush();
             while (rs.next()) {
-                String result = rs.getString("id") + "," + rs.getString("fila") + "," + rs.getString("assento") + "," + rs.getString("preco");
+                String result = "ID: " + rs.getString("id") + "\t" + "Fila: " + rs.getString("fila") + "\t" + "Assento: " + rs.getString("assento") + "\t" + "Preço: " + rs.getString("preco");
                 seats.add(result);
             }
             out.writeObject(seats);
@@ -258,26 +261,13 @@ public class ThreadCliente extends Thread{
         }
     }
 
-    private void select_show() throws IOException {
+    private void select_show(int argShowID) throws IOException {
         // Select a show with at least 24 hours before the show starts
         try{
-            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
-            Statement stmt = server.dbConn.createStatement();
-            // SQL query to get all shows with at least 1 day from now until the show starts
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            LocalDateTime now = LocalDateTime.now();
-            String format = "SELECT * FROM espetaculo WHERE visivel = 1 AND data_hora > '" + dtf.format(now.plusDays(1)) + "'";
-            ResultSet rs = stmt.executeQuery(format);
-            ArrayList<String> shows = new ArrayList<>();
+            showID = argShowID;
             out.writeObject("SHOW_SELECTED");
             out.flush();
-            while (rs.next()) {
-                String show = ("\nShow description: " + rs.getString("descricao") + "\t" + "Show type: " + rs.getString("tipo") + "\t" + "Show date and time: " + rs.getString("data_hora") + "\t" + "Show locale: " + rs.getString("local") + "\t" + "Show locality: " + rs.getString("localidade"));
-                shows.add(show);
-            }
-            out.writeObject(shows);
-            out.flush();
-        } catch (SQLException | IOException e) {
+        } catch (IOException e) {
             out.writeObject("ERROR_OCCURED");
             out.flush();
             System.out.println("[ ! ] An error has occurred while selecting show");
@@ -293,7 +283,9 @@ public class ThreadCliente extends Thread{
             Statement stmt = server.dbConn.createStatement();
             ResultSet rs;
             ArrayList<String> shows = new ArrayList<>();
-            String format = "SELECT * FROM espetaculo WHERE visivel = 1";
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            LocalDateTime now = LocalDateTime.now();
+            String format = "SELECT * FROM espetaculo WHERE visivel = 1 AND data_hora > '" + dtf.format(now.plusDays(1)) + "'";
             if(filters.get("descricao") != null){
                 format += " AND descricao LIKE '%" + filters.get("descricao") + "%'";
             }
@@ -344,11 +336,13 @@ public class ThreadCliente extends Thread{
                 out.flush();
                 rs = stmt.executeQuery("SELECT * FROM reserva WHERE pago = 0 AND id_utilizador = " + clientID);
                 while(rs.next()){
-                    ResultSet rs2 = stmt.executeQuery("SELECT * FROM espetaculos WHERE id = " + rs.getString("id_espetaculo"));
+                    String payment = "Reservation ID: " + rs.getString("id");
+                    ResultSet rs2 = stmt.executeQuery("SELECT * FROM espetaculo WHERE id = " + rs.getString("id_espetaculo"));
                     rs2.next();
-                    ResultSet rs3 = stmt.executeQuery("SELECT * FROM lugar WHERE id_espetaculo = " + rs2.getString("id"));
+                    payment += " | Show: " + rs2.getString("descricao") + " | Date: " + rs2.getString("data_hora");
+                    ResultSet rs3 = stmt.executeQuery("SELECT * FROM lugar WHERE espetaculo_id = " + rs2.getString("id"));
                     rs3.next();
-                    String payment = "Reservation ID: " + rs.getString("id") + " | Show: " + rs2.getString("name") + " | Date: " + rs2.getString("date") + " | Price: " + rs3.getString("price");
+                    payment += " | Price: " + rs3.getString("preco");
                     payments.add(payment);
                 }
                 out.writeObject(payments);
@@ -358,7 +352,7 @@ public class ThreadCliente extends Thread{
                 out.flush();
                 rs = stmt.executeQuery("SELECT * FROM reserva WHERE pago = 1 AND id_utilizador = " + clientID);
                 while(rs.next()){
-                    String payment = "Reservation ID: " + rs.getString("id") + " | Show: " + rs.getString("id_espetaculo") + " | Date: " + rs.getString("data_hora") + " | Price: " + rs.getString("preco");
+                    String payment = "Reservation ID: " + rs.getString("id") + " | Show: " + rs.getString("id_espetaculo") + " | Date: " + rs.getString("data_hora");
                     payments.add(payment);
                 }
                 out.writeObject(payments);
@@ -369,6 +363,7 @@ public class ThreadCliente extends Thread{
             out.flush();
             System.out.println("[ ! ] An error has occurred while listing payments");
             System.out.println("      " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

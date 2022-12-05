@@ -10,6 +10,7 @@
         import java.net.SocketException;
         import java.util.ArrayList;
         import java.util.Arrays;
+        import java.util.HashMap;
         import java.util.Scanner;
 
 public class ThreadEnvia extends Thread {
@@ -88,12 +89,13 @@ public class ThreadEnvia extends Thread {
                                             oos.writeObject(payments);
                                             oos.flush();
                                             String r4 = (String) ois.readObject();
+                                            System.out.println(r4);
                                             switch (r4) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
                                                 default:
-                                                    ArrayList response4 = (ArrayList) ois.readObject();
+                                                    ArrayList<String> response4 = (ArrayList<String>) ois.readObject();
                                                     if (response4.size() == 0)
                                                         System.out.print("[ ! ] No payments to confirm\n");
                                                     else {
@@ -126,7 +128,6 @@ public class ThreadEnvia extends Thread {
                                                     }
                                                     break;
                                             }
-
                                             break;
                                         case 4:
                                             System.out.print("\n[ * ] ADMIN\n\t[ * ] SEARCH AND LIST SHOWS\n");
@@ -164,8 +165,10 @@ public class ThreadEnvia extends Thread {
                                             break;
                                         case 5:
                                             System.out.print("\n[ * ] ADMIN\n\t[ * ] SELECT SHOW \n");
-                                            String[] s = new String[1];
+                                            String[] s = new String[2];
                                             s[0] = "SELECT_SHOW";
+                                            System.out.print("[ · ] Show ID: ");
+                                            s[1] = sc.nextLine();
                                             oos.writeObject(s);
                                             oos.flush();
                                             String r7 = (String) ois.readObject();
@@ -173,16 +176,10 @@ public class ThreadEnvia extends Thread {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
+                                                case "SHOW_SELECTED":
+                                                    System.out.println("[ * ] Show " + s[1] + " selected\n");
+                                                    break;
                                                 default:
-                                                    ArrayList response7 = (ArrayList) ois.readObject();
-                                                    System.out.println(response7);
-                                                    if (response7.size() == 0)
-                                                        System.out.print("[ ! ] No shows found\n");
-                                                    else {
-                                                        System.out.print("[ * ] Shows selected: ");
-                                                        System.out.println(response7);
-                                                        System.out.println("\n");
-                                                    }
                                                     break;
                                             }
                                             break;
@@ -190,7 +187,7 @@ public class ThreadEnvia extends Thread {
                                             System.out.print("\n[ * ] ADMIN\n\t[ * ] SEATS AND PRICE \n");
                                             String[] placesAndPricesSTR = new String[10];
                                             placesAndPricesSTR[0] = "AVAILABLE_SEATS_AND_PRICE";
-                                            System.out.print("[ · ] Type the desired seats [Separate the seats with commas]: ");
+                                            System.out.print("[ · ] Show ID: ");
                                             placesAndPricesSTR[1] = sc.nextLine();
                                             oos.writeObject(placesAndPricesSTR);
                                             oos.flush();
@@ -200,7 +197,7 @@ public class ThreadEnvia extends Thread {
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
                                                 default:
-                                                    ArrayList response8 = (ArrayList) ois.readObject();
+                                                    ArrayList<String> response8 = (ArrayList<String>) ois.readObject();
                                                     if (response8.size() == 0)
                                                         System.out.print("[ * ] No seats found\n");
                                                     else {
@@ -214,8 +211,7 @@ public class ThreadEnvia extends Thread {
                                         case 7:
                                             System.out.print("\n[ * ] ADMIN\n\t[ * ] SELECT SEATS \n");
                                             String[] pla = new String[2];
-                                            pla[0] = "AVAILABLE_SEATS_AND_PRICE";
-                                            // Asks for the seats to be reserved
+                                            pla[0] = "select_seats";
                                             System.out.println("[ · ] Type the desired seats [Separate the seats with commas]: ");
                                             pla[1] = sc.nextLine();
                                             oos.writeObject(pla);
@@ -226,14 +222,9 @@ public class ThreadEnvia extends Thread {
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
                                                 default:
-                                                    ArrayList response9 = (ArrayList) ois.readObject();
-                                                    if (response9.size() == 0)
-                                                        System.out.print("[ * ] No seats found\n");
-                                                    else {
-                                                        System.out.print("[ * ] Selected seats: ");
-                                                        System.out.println(response9);
-                                                        System.out.println("\n");
-                                                    }
+                                                    HashMap<String, ArrayList<String>> hm = (HashMap<String, ArrayList<String>>) ois.readObject();
+                                                    System.out.println("[ * ] Reserved seats: " + hm.get("RESERVED"));
+                                                    System.out.println("[ * ] Already reserved seats: " + hm.get("ALREADY_RESERVED"));
                                                     break;
                                             }
                                             break;
@@ -250,7 +241,7 @@ public class ThreadEnvia extends Thread {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
-                                                case "SHOW_REMOVED_SUCCESSFULLY":
+                                                case "RESERVA_SUCCESSFULLY_REMOVED":
                                                     System.out.println("[ * ] Reservation removed successfully\n");
                                                     break;
                                                 default:
@@ -271,11 +262,8 @@ public class ThreadEnvia extends Thread {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
-                                                case "PAYMENT_SUCCESSFUL":
+                                                case "PAYMENT_CONFIRMED":
                                                     System.out.println("[ * ] Payment successful\n");
-                                                    break;
-                                                default:
-                                                    System.out.println("[ ! ] Unknown error\n");
                                                     break;
                                             }
                                             break;
@@ -383,7 +371,7 @@ public class ThreadEnvia extends Thread {
                                             String[] sendingSTREDITADMIN = new String[4];
                                             System.out.print("[ * ] USER\n\t[ * ] EDIT PROFILE\n");
                                             sendingSTREDITADMIN[0] = "EDIT_PROFILE";
-                                            System.out.print("[ · ] Name: ");
+                                            System.out.print("[ · ] Name:");
                                             sendingSTREDITADMIN[1] = sc.nextLine();
                                             System.out.print("[ · ] Username: ");
                                             sendingSTREDITADMIN[2] = sc.nextLine();
@@ -391,10 +379,10 @@ public class ThreadEnvia extends Thread {
                                             sendingSTREDITADMIN[3] = sc.nextLine();
                                             oos.writeObject(sendingSTREDITADMIN);
                                             oos.flush();
-                                            String s1 = (String) ois.readObject();
-                                            switch (s1) {
+                                            String response3 = (String) ois.readObject();
+                                            switch (response3) {
                                                 case "UPDATE_SUCCESSFUL":
-                                                    System.out.println("[ * ] Update successful\n");
+                                                    System.out.println("[ * ] Successfully updated profile\n");
                                                     break;
                                                 case "USER_NOT_FOUND":
                                                     System.out.println("[ ! ] User not found\n");
@@ -410,20 +398,19 @@ public class ThreadEnvia extends Thread {
                                             payments[0] = "AWAITING_PAYMENT_CONFIRMATION";
                                             oos.writeObject(payments);
                                             oos.flush();
-                                            String s2 = (String) ois.readObject();
-                                            switch (s2){
+                                            String r4 = (String) ois.readObject();
+                                            System.out.println(r4);
+                                            switch (r4) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
                                                 default:
-                                                    ArrayList d2 = (ArrayList) ois.readObject();
-                                                    if (d2.size() == 0)
-                                                        System.out.println("[ ! ] No payments to confirm\n");
+                                                    ArrayList<String> response4 = (ArrayList<String>) ois.readObject();
+                                                    if (response4.size() == 0)
+                                                        System.out.print("[ ! ] No payments to confirm\n");
                                                     else {
-                                                        System.out.println("[ * ] Payments to confirm:\n");
-                                                        for (int i = 0; i < d2.size(); i++) {
-                                                            System.out.println(d2.get(i));
-                                                        }
+                                                        System.out.print("[ * ] Payments to confirm: ");
+                                                        System.out.println(response4);
                                                         System.out.println("\n");
                                                     }
                                                     break;
@@ -435,105 +422,97 @@ public class ThreadEnvia extends Thread {
                                             paymentsP[0] = "PAYMENT_CONFIRMED";
                                             oos.writeObject(paymentsP);
                                             oos.flush();
-                                            String s3 = (String) ois.readObject();
-                                            switch (s3) {
+                                            String r5 = (String) ois.readObject();
+                                            switch (r5) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
                                                 default:
-                                                    ArrayList d3 = (ArrayList) ois.readObject();
-                                                    if (d3.size() == 0)
-                                                        System.out.println("[ ! ] No payments to confirm\n");
+                                                    ArrayList response5 = (ArrayList) ois.readObject();
+                                                    if (response5.size() == 0)
+                                                        System.out.print("[ ! ] Empty paid reservations list\n");
                                                     else {
-                                                        System.out.println("[ * ] Payments to confirm:\n");
-                                                        for (int i = 0; i < d3.size(); i++) {
-                                                            System.out.println(d3.get(i));
-                                                        }
+                                                        System.out.print("[ * ] Paid reservations: ");
+                                                        System.out.println(response5);
                                                         System.out.println("\n");
                                                     }
                                                     break;
                                             }
-
                                             break;
                                         case 4:
                                             System.out.print("\n[ * ] USER\n\t[ * ] SEARCH AND LIST SHOWS\n");
-                                            String[] f = new String[5];
-                                            f[0] = "SHOWS_LIST_SEARCH";
+                                            String[] sendingSTRSEARCH = new String[5];
+                                            sendingSTRSEARCH[0] = "SHOWS_LIST_SEARCH";
                                             // Filters to search
                                             System.out.print("[ · ] Show name: ");
-                                            f[1] = "nome " + sc.nextLine();
+                                            sendingSTRSEARCH[1] = "nome " + sc.nextLine();
                                             System.out.print("[ · ] Show type: ");
-                                            f[2] = "tipo " + sc.nextLine();
+                                            sendingSTRSEARCH[2] = "tipo " + sc.nextLine();
                                             System.out.print("[ · ] Show date: ");
-                                            f[3] = "data_hora " + sc.nextLine();
+                                            sendingSTRSEARCH[3] = "data_hora " + sc.nextLine();
                                             System.out.print("[ · ] Show locale: ");
-                                            f[4] = "localidade " + sc.nextLine();
-                                            oos.writeObject(f);
+                                            sendingSTRSEARCH[4] = "localidade " + sc.nextLine();
+                                            oos.writeObject(sendingSTRSEARCH);
                                             oos.flush();
-                                            String s4 = (String) ois.readObject();
-                                            switch (s4) {
+                                            String response6 = (String) ois.readObject();
+                                            System.out.println(response6);
+                                            switch (response6) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
                                                 default:
-                                                    ArrayList d4 = (ArrayList) ois.readObject();
-                                                    if (d4.size() == 0)
-                                                        System.out.println("[ ! ] No shows found\n");
+                                                    ArrayList<String> response7 = (ArrayList<String>) ois.readObject();
+                                                    if (response7.size() == 0)
+                                                        System.out.print("[ ! ] No shows found with the given filters\n");
                                                     else {
-                                                        System.out.println("[ * ] Shows found:\n");
-                                                        for (int i = 0; i < d4.size(); i++) {
-                                                            System.out.println(d4.get(i));
+                                                        System.out.print("[ * ] Shows found: ");
+                                                        for(String s : response7){
+                                                            System.out.println(s);
                                                         }
-                                                        System.out.println("\n");
                                                     }
                                                     break;
                                             }
                                             break;
                                         case 5:
                                             System.out.print("\n[ * ] USER\n\t[ * ] SELECT SHOW \n");
-                                            String[] s = new String[1];
+                                            String[] s = new String[2];
                                             s[0] = "SELECT_SHOW";
+                                            System.out.print("[ · ] Show ID: ");
+                                            s[1] = sc.nextLine();
                                             oos.writeObject(s);
                                             oos.flush();
-                                            String s5 = (String) ois.readObject();
-                                            switch (s5) {
+                                            String r7 = (String) ois.readObject();
+                                            switch (r7) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
+                                                case "SHOW_SELECTED":
+                                                    System.out.println("[ * ] Show " + s[1] + " selected\n");
+                                                    break;
                                                 default:
-                                                    ArrayList d5 = (ArrayList) ois.readObject();
-                                                    if (d5.size() == 0)
-                                                        System.out.println("[ ! ] No shows found\n");
-                                                    else {
-                                                        System.out.println("[ * ] Shows found:\n");
-                                                        for (int i = 0; i < d5.size(); i++) {
-                                                            System.out.println(d5.get(i));
-                                                        }
-                                                        System.out.println("\n");
-                                                    }
                                                     break;
                                             }
                                             break;
                                         case 6:
                                             System.out.print("\n[ * ] USER\n\t[ * ] SEATS AND PRICE \n");
-                                            String[] pp = new String[2];
-                                            pp[0] = "AVAILABLE_SEATS_AND_PRICE";
+                                            String[] placesAndPricesSTR = new String[10];
+                                            placesAndPricesSTR[0] = "AVAILABLE_SEATS_AND_PRICE";
                                             System.out.print("[ · ] Show ID: ");
-                                            pp[1] = sc.nextLine();
-                                            oos.writeObject(pp);
+                                            placesAndPricesSTR[1] = sc.nextLine();
+                                            oos.writeObject(placesAndPricesSTR);
                                             oos.flush();
-                                            String s6 = (String) ois.readObject();
-                                            switch (s6) {
+                                            String r8 = (String) ois.readObject();
+                                            switch (r8) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
                                                 default:
-                                                    ArrayList d6 = (ArrayList) ois.readObject();
-                                                    if (d6.size() == 0)
+                                                    ArrayList<String> response8 = (ArrayList<String>) ois.readObject();
+                                                    if (response8.size() == 0)
                                                         System.out.print("[ * ] No seats found\n");
                                                     else {
-                                                        System.out.print("[ * ] Selected seats: ");
-                                                        System.out.println(d6);
+                                                        System.out.print("[ * ] Seats found: ");
+                                                        System.out.println(response8);
                                                         System.out.println("\n");
                                                     }
                                                     break;
@@ -553,14 +532,9 @@ public class ThreadEnvia extends Thread {
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
                                                 default:
-                                                    ArrayList response9 = (ArrayList) ois.readObject();
-                                                    if (response9.size() == 0)
-                                                        System.out.print("[ * ] No seats found\n");
-                                                    else {
-                                                        System.out.print("[ * ] Selected seats: ");
-                                                        System.out.println(response9);
-                                                        System.out.println("\n");
-                                                    }
+                                                    HashMap<String, ArrayList<String>> hm = (HashMap<String, ArrayList<String>>) ois.readObject();
+                                                    System.out.println("[ * ] Reserved seats: " + hm.get("RESERVED"));
+                                                    System.out.println("[ * ] Already reserved seats: " + hm.get("ALREADY_RESERVED"));
                                                     break;
                                             }
                                             break;
@@ -577,29 +551,26 @@ public class ThreadEnvia extends Thread {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
-                                                case "PAYMENT_SUCCESSFUL":
+                                                case "PAYMENT_CONFIRMED":
                                                     System.out.println("[ * ] Payment successful\n");
-                                                    break;
-                                                default:
-                                                    System.out.println("[ ! ] Unknown error\n");
                                                     break;
                                             }
                                             break;
                                         case 9:
                                             System.out.print("\n[ * ] USER\n\t[ * ] CANCEL RESERVATION\n");
-                                            String[] cancel = new String[2];
-                                            cancel[0] = "CANCEL_RESERVATION";
+                                            String[] rem = new String[2];
+                                            rem[0] = "REMOVE_RESERVATION";
                                             System.out.print("[ · ] Reservation ID: ");
-                                            cancel[1] = sc.nextLine();
-                                            oos.writeObject(cancel);
+                                            rem[1] = sc.nextLine();
+                                            oos.writeObject(rem);
                                             oos.flush();
-                                            String r12 = (String) ois.readObject();
-                                            switch (r12) {
+                                            String r10 = (String) ois.readObject();
+                                            switch (r10) {
                                                 case "ERROR_OCCURED":
                                                     System.out.println("[ ! ] Unknown error\n");
                                                     break;
-                                                case "CANCEL_SUCCESSFUL":
-                                                    System.out.println("[ * ] Cancel successful\n");
+                                                case "RESERVA_SUCCESSFULLY_REMOVED":
+                                                    System.out.println("[ * ] Reservation removed successfully\n");
                                                     break;
                                                 default:
                                                     System.out.println("[ ! ] Unknown error\n");
