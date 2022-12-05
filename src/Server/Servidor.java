@@ -216,7 +216,7 @@ public class Servidor {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("[ · ] Database version incremented to " + (getDbVersion()));
+        //System.out.println("[ · ] Database version incremented to " + (getDbVersion()));
     }
 
     public synchronized void updateDatabase(HashMap<Integer, String> dbVersions) throws SQLException {

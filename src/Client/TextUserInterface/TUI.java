@@ -58,6 +58,7 @@ public class TUI {
         System.out.println("\t[ 10 ] - Insert show");
         System.out.println("\t[ 11 ] - Remove show");
         System.out.println("\t[ 12 ] - Exit");
+        System.out.println("\t[ 13 ] - Change show visibility");
         System.out.print("[ * ] OPTION: ");
         option = sc.nextInt();
         return option;

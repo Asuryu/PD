@@ -1,15 +1,13 @@
 package Server.Threads;
 
+import Client.Espetaculo;
 import Server.Heartbeat;
 import Server.Servidor;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,7 +17,7 @@ public class ThreadCliente extends Thread{
     protected final Servidor server;
     private final Socket client;
     private int clientID;
-    private int showID;
+    private int showID = -1;
     private int reservationID;
     private boolean admin = false;
     private ObjectOutputStream out;
@@ -60,7 +58,8 @@ public class ThreadCliente extends Thread{
                     case "REMOVE_RESERVATION" -> remove_reservation(Integer.parseInt(arrayRequest[1]));
                     case "PAY" -> pay(Integer.parseInt(arrayRequest[1]));
                     case "REMOVE_SHOW" -> removeShow(Integer.parseInt(arrayRequest[1]));
-                    case "INSERT_SHOW" -> insertShow(arrayRequest[1]);
+                    case "INSERT_SHOW" -> insertShow();
+                    case "CHANGE_SHOW_VISIBILITY" -> changeShowVisibility(Integer.parseInt(arrayRequest[1]));
                     case "LOGOUT" -> logout();
                     default -> client.close();
                 }
@@ -121,20 +120,38 @@ public class ThreadCliente extends Thread{
             System.out.println("      " + e.getMessage());
         }
     }
-    private void insertShow(String data) throws IOException {
+    private void insertShow() throws IOException {
         try{
             if(admin){
-                String[] arrayData = data.split(",");
+                if(showID == -1){
+                    out.writeObject("NO_SHOW_SELECTED");
+                    out.flush();
+                }
+                out.writeObject("SEND_SHOW_DATA");
+                out.flush();
+                Espetaculo espetaculo = (Espetaculo)in.readObject();
                 server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
                 Statement stmt = server.dbConn.createStatement();
-                String format = "INSERT INTO espetaculo (descricao, tipo, data_hora, duracao, local, localidade, pais, classificacao_etaria, visivel) VALUES " +
-                        "('" + arrayData[0] + "', '" + arrayData[1] + "', '" + arrayData[2] + "', '" + arrayData[3] + "', '" + arrayData[4] + "', '" + arrayData[5] + "', '" + arrayData[6] + "', '" + arrayData[7] + "', '" + arrayData[8] + "')";
+                String format = "INSERT INTO espetaculo (descricao, tipo, data_hora, duracao, local, localidade, pais, classificacao_etaria, visivel) " +
+                        "VALUES ('" + espetaculo.getDesignacao() + "', '" + espetaculo.getTipo() + "', '" + espetaculo.getDateTime() + "', '" + espetaculo.getDuracao() + "', '" +
+                        espetaculo.getLocal() + "', '" + espetaculo.getLocalidade() + "', '" + espetaculo.getPais() + "', '" + espetaculo.getClassificacao_etaria() + "', '" + 0 + "')";
                 stmt.executeUpdate(format);
                 server.incDbVersion(format);
+
+                HashMap<String, HashMap<Integer, Integer>> mapa_lugares = espetaculo.getMapa_lugares();
+
+                for (String fila : mapa_lugares.keySet()) {
+                    HashMap<Integer, Integer> lugares = mapa_lugares.get(fila);
+                    for (Integer lugar : lugares.keySet()) {
+                        format = "INSERT INTO lugar (fila, assento, preco, espetaculo_id) VALUES ('" + fila + "', '" + lugar + "', '" + lugares.get(lugar) + "', '" + showID + "')";
+                        stmt.executeUpdate(format);
+                        server.incDbVersion(format);
+                    }
+                }
                 out.writeObject("SHOW_INSERTED_SUCCESSFULLY");
                 out.flush();
             }
-        }catch (SQLException | IOException e) {
+        }catch (SQLException | IOException | ClassNotFoundException e) {
             out.writeObject("ERROR_OCCURED");
             out.flush();
             System.out.println("[ ! ] An error has occurred while inserting show");
@@ -461,6 +478,40 @@ public class ThreadCliente extends Thread{
             out.writeObject("REGISTER_FAILED");
             out.flush();
             System.out.println("[ ! ] An error has occurred while registering user");
+            System.out.println("      " + e.getMessage());
+        }
+    }
+
+    private void changeShowVisibility(int id) throws IOException {
+        try {
+            server.dbConn = DriverManager.getConnection(server.JDBC_STRING);
+            Statement stmt = server.dbConn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM espetaculo WHERE id=" + id);
+            if(rs.next()){
+                String format = "UPDATE espetaculo SET visivel = %d WHERE id=%d";
+                int visibility = rs.getInt("visivel");
+                if(visibility == 1){
+                    format = String.format(format, 0, id);
+                }else{
+                    format = String.format(format, 1, id);
+                }
+                stmt.executeUpdate(format);
+                if(visibility == 1){
+                    out.writeObject("SHOW_HIDDEN");
+                    out.flush();
+                }else{
+                    out.writeObject("SHOW_UNHIDDEN");
+                    out.flush();
+                }
+                server.incDbVersion(format);
+            }else{
+                out.writeObject("SHOW_NOT_FOUND");
+                out.flush();
+            }
+        } catch (SQLException | IOException e) {
+            out.writeObject("ERROR_OCCURED");
+            out.flush();
+            System.out.println("[ ! ] An error has occurred while changing show visibility");
             System.out.println("      " + e.getMessage());
         }
     }

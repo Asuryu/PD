@@ -26,7 +26,6 @@ public class ThreadEnvia extends Thread {
         this.cliente = cliente;
         oos = new ObjectOutputStream(s.getOutputStream());
         ois = new ObjectInputStream(s.getInputStream());
-        lerFicheiroEspetaculos("espetaculos.txt");
     }
 
     @Override
@@ -55,7 +54,7 @@ public class ThreadEnvia extends Thread {
                                 do {
                                     do {
                                         opt2 = tui.logedMenuAdmin();
-                                    }while(opt2 < 1 || opt2 > 12);
+                                    }while(opt2 < 1 || opt2 > 13);
                                     switch (opt2) {
                                         case 1:
                                             String[] sendingSTREDITADMIN = new String[4];
@@ -282,33 +281,21 @@ public class ThreadEnvia extends Thread {
                                             break;
                                         case 10:
                                             System.out.print("\n[ * ]ADMIN\n\t[ * ] INSERT SHOW \n");
-                                            String[] ins = new String[10];
-                                            ins[0] = "INSERT_SHOW";
-                                            // Asks for the show data (descricao, tipo, data_hora, duracao, local, localidade, pais, classificacao_etaria, visivel)
-                                            System.out.print("[ · ] Description: ");
-                                            ins[1] = sc.nextLine() + ",";
-                                            System.out.print("[ · ] Type: ");
-                                            ins[1] += sc.nextLine() + ",";
-                                            System.out.print("[ · ] Date and time: ");
-                                            ins[1] += sc.nextLine() + ",";
-                                            System.out.print("[ · ] Duration: ");
-                                            ins[1] += sc.nextLine() + ",";
-                                            System.out.print("[ · ] Location: ");
-                                            ins[1] += sc.nextLine() + ",";
-                                            System.out.print("[ · ] Locality: ");
-                                            ins[1] += sc.nextLine() + ",";
-                                            System.out.print("[ · ] Country: ");
-                                            ins[1] += sc.nextLine() + ",";
-                                            System.out.print("[ · ] Age classification: ");
-                                            ins[1] += sc.nextLine() + ",";
-                                            System.out.print("[ · ] Visible: ");
-                                            ins[1] += sc.nextLine();
-                                            oos.writeObject(ins);
+                                            System.out.print("[ · ] Input the file name with the show info: ");
+                                            String fileName = sc.nextLine();
+                                            Espetaculo espetaculo = lerFicheiroEspetaculos(fileName);
+                                            if(espetaculo == null) break;
+                                            String[] insertShow = new String[1];
+                                            insertShow[0] = "INSERT_SHOW";
+                                            oos.writeObject(insertShow);
                                             oos.flush();
                                             String r12 = (String) ois.readObject();
                                             switch (r12) {
-                                                case "ERROR_OCCURED":
-                                                    System.out.println("[ ! ] Unknown error\n");
+                                                case "SEND_SHOW_DATA":
+                                                    oos.writeObject(espetaculo);
+                                                    oos.flush();
+                                                case "NO_SHOW_SELECTED":
+                                                    System.out.println("[ ! ] No show selected\n");
                                                     break;
                                                 case "SHOW_INSERTED_SUCCESSFULLY":
                                                     System.out.println("[ * ] Show inserted successfully\n");
@@ -332,7 +319,7 @@ public class ThreadEnvia extends Thread {
                                             System.out.println(r13);
                                             switch (r13) {
                                                 case "ERROR_OCCURED":
-                                                    System.out.println("[ ! ] Unknown error\n");
+                                                    System.out.println("[ ! ] An error has occurred while inserting show\n");
                                                     break;
                                                 case "SHOW_REMOVED_SUCCESSFULLY":
                                                     System.out.println("[ * ] Show removed successfully\n");
@@ -348,6 +335,33 @@ public class ThreadEnvia extends Thread {
                                             oos.writeObject(logout);
                                             oos.flush();
                                             exit = true;
+                                            break;
+                                        case 13:
+                                            System.out.print("\n[ * ] ADMIN\n\t[ * ] CHANGE SHOW VISIBILITY\n");
+                                            String[] payload = new String[2];
+                                            payload[0] = "CHANGE_SHOW_VISIBILITY";
+                                            System.out.print("[ · ] Show ID: ");
+                                            payload[1] = sc.nextLine();
+                                            oos.writeObject(payload);
+                                            oos.flush();
+                                            String r14 = (String) ois.readObject();
+                                            switch (r14) {
+                                                case "ERROR_OCCURED":
+                                                    System.out.println("[ ! ] Unknown error\n");
+                                                    break;
+                                                case "SHOW_NOT_FOUND":
+                                                    System.out.println("[ ! ] The show with that ID was not found\n");
+                                                    break;
+                                                case "SHOW_HIDDEN":
+                                                    System.out.println("[ * ] Show hidden\n");
+                                                    break;
+                                                case "SHOW_UNHIDDEN":
+                                                    System.out.println("[ * ] Show unhidden\n");
+                                                    break;
+                                                default:
+                                                    System.out.println("[ ! ] Unknown error\n");
+                                                    break;
+                                            }
                                             break;
                                         default:
                                             exit = true;
@@ -657,7 +671,7 @@ public class ThreadEnvia extends Thread {
         }
     }
 
-    public static void lerFicheiroEspetaculos(String filename) {
+    public static Espetaculo lerFicheiroEspetaculos(String filename) {
         File ficheiro = new File(filename);
         Espetaculo espetaculo = new Espetaculo();
         // read line by line
@@ -734,11 +748,13 @@ public class ThreadEnvia extends Thread {
                 }
                 linha = br.readLine();
             }
-            System.out.println(espetaculo);
+            return espetaculo;
         } catch (FileNotFoundException e) {
             System.out.println("[ ! ] File not found");
+            return null;
         } catch (IOException e) {
             System.out.println("[ ! ] Error reading file");
+            return null;
         }
     }
 
