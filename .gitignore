@@ -1,6 +1,5 @@
 .DS_Store
 *.icloud
 /out
-.idea/dataSources.local.xml
-.idea/sqldialects.xml
 /databases
+.idea
