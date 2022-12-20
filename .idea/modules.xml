@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/PD.iml" filepath="$PROJECT_DIR$/PD.iml" />
       <module fileurl="file://$PROJECT_DIR$/REST API/REST API.iml" filepath="$PROJECT_DIR$/REST API/REST API.iml" />
+      <module fileurl="file://$PROJECT_DIR$/REST API/RESTAPI.iml" filepath="$PROJECT_DIR$/REST API/RESTAPI.iml" />
     </modules>
   </component>
 </project>
