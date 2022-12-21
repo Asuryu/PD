@@ -1,26 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="PD-2022-23-TP" uuid="9da795b4-e138-4ffa-ab10-f135abca028b">
+    <data-source source="LOCAL" name="database" uuid="18f045ad-995d-4cb7-abe5-226eabcb65ff">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:D:\OneDrive - ISEC\Faculdade\4º Ano\1º Semestre\PD\TP_PD_2022_2023\PD-2022-23-TP.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:\Users\tomas\Documents\GitHub\PD\REST API\src\main\java\database.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
-    <data-source source="LOCAL" name="PD-2022-23-TP-5002" uuid="bb05e767-aa69-418e-9b73-856b6a39760d">
-      <driver-ref>sqlite.xerial</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:D:\OneDrive - ISEC\Faculdade\4º Ano\1º Semestre\PD\TP_PD_2022_2023\databases\PD-2022-23-TP-5002.db</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
-    <data-source source="LOCAL" name="PD-2022-23-TP-5002 [2]" uuid="bc9a5903-8aff-4a46-97fe-6148a9c629d9">
-      <driver-ref>sqlite.xerial</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/databases/PD-2022-23-TP-5002.db</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
+      <libraries>
+        <library>
+          <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/Xerial SQLiteJDBC/3.39.2/sqlite-jdbc-3.39.2.jar</url>
+        </library>
+      </libraries>
     </data-source>
   </component>
 </project>
