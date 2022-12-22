@@ -30,9 +30,12 @@ public class RestApiApplication {
                     .addFilterAfter(new AuthorizationFilter(),
                             UsernamePasswordAuthenticationFilter.class)
                     .authorizeRequests()
-                    .antMatchers(HttpMethod.POST, "/auth").permitAll() // Permitir users sem login de fazer pedidos POST com este URI
-                    .anyRequest().authenticated().and() // Obrigar aos users estarem autenticados para outro pedido qualquer
-                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Todos os pedidos tem que ter a informação necesária: stateless
+                    .antMatchers(HttpMethod.GET, "/users/*").hasAuthority("ADMIN")
+                    .antMatchers(HttpMethod.GET, "/users").hasAuthority("ADMIN")
+                    .antMatchers(HttpMethod.POST, "/auth").permitAll()
+                    .antMatchers(HttpMethod.GET, "/espetaculos").permitAll()
+                    .anyRequest().authenticated().and()
+                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     .and().exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
         }
     }

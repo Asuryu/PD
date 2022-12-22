@@ -20,7 +20,6 @@ public class AuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        System.out.println("AuthorizationFilter");
         DatabaseManager dbmanager = new DatabaseManager();
 
         // Obtencao do header o token de autenticacao
@@ -33,19 +32,34 @@ public class AuthorizationFilter extends OncePerRequestFilter {
         //todo: Verifica se token é válido e devolve o username do user
         switch (dbmanager.checkToken(token)){
             case -1: // Token expired
-                filterChain.doFilter(request, response);
-                break;
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
+                return;
             case 1: // Token valid
                 List<GrantedAuthority> authorities = new ArrayList<>();
-                authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+                authorities.add(new SimpleGrantedAuthority("USER"));
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(token, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 break;
-            default:
-                filterChain.doFilter(request, response);
-                DatabaseManager.close();
+            case 2: // Token valid (admin)
+                List<GrantedAuthority> authorities2 = new ArrayList<>();
+                authorities2.add(new SimpleGrantedAuthority("USER"));
+                authorities2.add(new SimpleGrantedAuthority("ADMIN"));
+                UsernamePasswordAuthenticationToken authentication2 = new UsernamePasswordAuthenticationToken(token, null, authorities2);
+                SecurityContextHolder.getContext().setAuthentication(authentication2);
                 break;
+            case 0: // Token invalid
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                return;
         }
+
+        filterChain.doFilter(request, response);
+        DatabaseManager.close();
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        // auth and espetaculos are public
+        return path.equals("/auth") || path.equals("/espetaculos");
+    }
 }

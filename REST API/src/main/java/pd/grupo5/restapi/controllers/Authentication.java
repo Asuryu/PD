@@ -14,8 +14,10 @@ public class Authentication {
     public User login(@RequestBody User user) {
         DatabaseManager dbManager = new DatabaseManager();
         String sha256hex = DigestUtils.sha256Hex(user.getUsername() + System.currentTimeMillis());
-        if(dbManager.loginUser(user.getUsername(), user.getPassword(), sha256hex)){
+        int result = dbManager.loginUser(user.getUsername(), user.getPassword(), sha256hex);
+        if(result > 0){
             user.setToken(sha256hex);
+            user.setId(result);
         }
         else{
             user.setToken("User not registered!");
