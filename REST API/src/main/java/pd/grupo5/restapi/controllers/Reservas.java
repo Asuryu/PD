@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import pd.grupo5.restapi.database.DatabaseManager;
+import pd.grupo5.restapi.models.Espetaculos;
 import pd.grupo5.restapi.models.User;
 
 import java.lang.reflect.Array;

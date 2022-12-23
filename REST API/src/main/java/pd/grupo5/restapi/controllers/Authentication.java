@@ -1,9 +1,11 @@
 package pd.grupo5.restapi.controllers;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import pd.grupo5.restapi.database.DatabaseManager;
 import pd.grupo5.restapi.models.User;
 
@@ -21,8 +23,8 @@ public class Authentication {
         }
         else{
             user.setToken("User not registered!");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Could not login!");
         }
-
         return user;
     }
 }

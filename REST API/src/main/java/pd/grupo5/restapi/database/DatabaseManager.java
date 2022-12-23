@@ -2,9 +2,7 @@ package pd.grupo5.restapi.database;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.tomcat.jni.Local;
-import pd.grupo5.restapi.models.Espetaculos;
-import pd.grupo5.restapi.models.Reservas;
-import pd.grupo5.restapi.models.User;
+import pd.grupo5.restapi.models.*;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -90,13 +88,15 @@ public class DatabaseManager {
         return 0;
     }
 
-    public ArrayList<Reservas> getPaidReservations() {
+    public ArrayList<pd.grupo5.restapi.models.Reservas> getUnpaidReservations() {
         try (Statement statement = db.createStatement()) {
-            String query = "SELECT * FROM reserva WHERE id_utilizador = " + user_id + " AND pago = 1";
+            String query = "SELECT * FROM reserva WHERE id_utilizador = " + user_id + " AND pago = 0";
             ResultSet rs = statement.executeQuery(query);
-            ArrayList<Reservas> reservations = new ArrayList<>();
+            ArrayList<pd.grupo5.restapi.models.Reservas> reservations = new ArrayList<>();
             while (rs.next()) {
-                reservations.add(new Reservas(rs.getInt("id"), rs.getString("data_hora"), rs.getInt("pago") == 1, rs.getInt("id_utilizador"), rs.getInt("id_espetaculo")));
+                Espetaculos espetaculo = getEspetaculoById(rs.getInt("id_espetaculo"));
+                ArrayList<Lugar> lugares = getLugaresByIdReserva(rs.getInt("id"));
+                reservations.add(new Reservas(rs.getInt("id"), rs.getString("data_hora"), rs.getInt("pago") == 1, rs.getInt("id_utilizador"), rs.getInt("id_espetaculo"), espetaculo, lugares));
             }
             return reservations;
         } catch (SQLException e) {
@@ -104,18 +104,60 @@ public class DatabaseManager {
         }
     }
 
-    public ArrayList<Reservas> getUnpaidReservations() {
+    public ArrayList<pd.grupo5.restapi.models.Reservas> getPaidReservations() {
         try (Statement statement = db.createStatement()) {
-            String query = "SELECT * FROM reserva WHERE id_utilizador = " + user_id + " AND pago = 0";
+            String query = "SELECT * FROM reserva WHERE id_utilizador = " + user_id + " AND pago = 1";
             ResultSet rs = statement.executeQuery(query);
-            ArrayList<Reservas> reservations = new ArrayList<>();
+            ArrayList<pd.grupo5.restapi.models.Reservas> reservations = new ArrayList<>();
             while (rs.next()) {
-                reservations.add(new Reservas(rs.getInt("id"), rs.getString("data_hora"), rs.getInt("pago") == 1, rs.getInt("id_utilizador"), rs.getInt("id_espetaculo")));
+                Espetaculos espetaculo = getEspetaculoById(rs.getInt("id_espetaculo"));
+                ArrayList<Lugar> lugares = getLugaresByIdReserva(rs.getInt("id"));
+                reservations.add(new Reservas(rs.getInt("id"), rs.getString("data_hora"), rs.getInt("pago") == 1, rs.getInt("id_utilizador"), rs.getInt("id_espetaculo"), espetaculo, lugares));
             }
             return reservations;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private ArrayList<Lugar> getLugaresByIdReserva(int id){
+        try (Statement statement = db.createStatement()) {
+            String query = "SELECT * FROM reserva_lugar WHERE id_reserva = " + id;
+            ResultSet rs = statement.executeQuery(query);
+            ArrayList<Lugar> lugares = new ArrayList<>();
+            while (rs.next()) {
+                lugares.add(getLugarById(rs.getInt("id_lugar")));
+            }
+            return lugares;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Lugar getLugarById(int id){
+        try (Statement statement = db.createStatement()) {
+            String query = "SELECT * FROM lugar WHERE id = " + id;
+            ResultSet rs = statement.executeQuery(query);
+            if (rs.next()) {
+                return new Lugar(rs.getInt("id"), rs.getString("fila"), rs.getString("assento"), rs.getFloat("preco"), rs.getInt("espetaculo_id"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    private Espetaculos getEspetaculoById(int id){
+        try (Statement statement = db.createStatement()) {
+            String query = "SELECT * FROM espetaculo WHERE id = " + id;
+            ResultSet rs = statement.executeQuery(query);
+            if (rs.next()) {
+                return new Espetaculos(rs.getInt("id"), rs.getString("descricao"), rs.getString("tipo"), rs.getString("data_hora"), rs.getInt("duracao"), rs.getString("local"), rs.getString("localidade"), rs.getString("pais"), rs.getString("classificacao_etaria"), rs.getInt("visivel") == 1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     public ArrayList<Espetaculos> getEspetaculos(String data_inicio, String data_fim){
@@ -163,6 +205,76 @@ public class DatabaseManager {
                 }
             }
             return espetaculos;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ArrayList<Utilizador> getRegisteredUsers(){
+        try (Statement statement = db.createStatement()) {
+            String query = "SELECT * FROM utilizador";
+            ResultSet rs = statement.executeQuery(query);
+            ArrayList<Utilizador> users = new ArrayList<>();
+            while (rs.next()) {
+                users.add(new Utilizador(rs.getInt("id"), rs.getString("username"), rs.getString("nome"),rs.getInt("administrador") == 1, rs.getInt("autenticado") == 1));
+            }
+            return users;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private boolean getUserByUsername(String username){
+        try (Statement statement = db.createStatement()) {
+            String query = "SELECT * FROM utilizador WHERE username = '" + username + "'";
+            ResultSet rs = statement.executeQuery(query);
+            if (rs.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+    private boolean getUserByName(String name){
+        try (Statement statement = db.createStatement()) {
+            String query = "SELECT * FROM utilizador WHERE nome = '" + name + "'";
+            ResultSet rs = statement.executeQuery(query);
+            if (rs.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+    public boolean addUser(String username, String nome, String password, boolean admin){
+        if(!getUserByUsername(username) && !getUserByName(nome)) {
+            try (Statement statement = db.createStatement()) {
+                String query = "INSERT INTO utilizador (username, nome, password, administrador, autenticado) VALUES ('" + username + "', '" + nome + "', '" + password + "', " + (admin ? 1 : 0) + ", 0)";
+                statement.executeUpdate(query);
+                return true;
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        } else return false;
+    }
+
+    public boolean deleteUser(int id){
+        try (Statement statement = db.createStatement()) {
+            String query = "SELECT * FROM utilizador WHERE id = " + id;
+            ResultSet rs = statement.executeQuery(query);
+            if (rs.next()) { // check if user exists
+                if (rs.getInt("autenticado") == 1) { // check if user is connected
+                    return false;
+                } else {
+                    query = "DELETE FROM utilizador WHERE id = " + id;
+                    statement.executeUpdate(query);
+                    return true;
+                }
+            } else return false;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

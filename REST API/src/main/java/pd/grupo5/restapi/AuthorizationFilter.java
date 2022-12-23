@@ -4,8 +4,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 import pd.grupo5.restapi.database.DatabaseManager;
+import pd.grupo5.restapi.models.User;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -20,17 +22,19 @@ public class AuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        DatabaseManager dbmanager = new DatabaseManager();
 
+        DatabaseManager dbmanager = new DatabaseManager();
         // Obtencao do header o token de autenticacao
         String token = request.getHeader("Authorization");
+        System.out.println("Token: " + token);
 
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
 
         //todo: Verifica se token é válido e devolve o username do user
-        switch (dbmanager.checkToken(token)){
+        int checkToken = dbmanager.checkToken(token);
+        switch (checkToken){
             case -1: // Token expired
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
                 return;
