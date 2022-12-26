@@ -26,13 +26,11 @@ public class AuthorizationFilter extends OncePerRequestFilter {
         DatabaseManager dbmanager = new DatabaseManager();
         // Obtencao do header o token de autenticacao
         String token = request.getHeader("Authorization");
-        System.out.println("Token: " + token);
 
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
 
-        //todo: Verifica se token é válido e devolve o username do user
         int checkToken = dbmanager.checkToken(token);
         switch (checkToken){
             case -1: // Token expired
