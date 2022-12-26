@@ -17,12 +17,21 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
+import static pd.grupo5.restapi.ServerRMIInterface.REGISTRY_BIND_NAME;
+
 @SpringBootApplication
 public class RestApiApplication {
 
-    public static void main(String[] args) {
-            SpringApplication.run(RestApiApplication.class, args);
-        }
+    private static ServidorRMI servidorRMI;
+
+    public static void main(String[] args) throws RemoteException {
+        SpringApplication.run(RestApiApplication.class, args);
+        servidorRMI = new ServidorRMI();
+    }
 
     @EnableWebSecurity
     @Configuration
@@ -32,8 +41,10 @@ public class RestApiApplication {
         @Override
         protected void configure(HttpSecurity http) throws Exception
         {
+
             http
                     .csrf().disable()
+                    .addFilterBefore(new RMICallback(servidorRMI), BasicAuthenticationFilter.class)
                     .authorizeRequests()
                     .antMatchers(HttpMethod.GET, "/users/*").hasAuthority("ADMIN")
                     .antMatchers(HttpMethod.GET, "/users").hasAuthority("ADMIN")

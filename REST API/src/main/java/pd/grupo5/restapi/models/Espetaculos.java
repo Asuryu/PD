@@ -113,7 +113,6 @@ public class Espetaculos {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         LocalDateTime dateTime = LocalDateTime.parse(data_hora, formatter);
         LocalDateTime dateTimeFim = dateTime.plusMinutes(duracao);
-        System.out.println(dateTimeFim.format(formatter));
         return dateTimeFim.format(formatter);
     }
 
