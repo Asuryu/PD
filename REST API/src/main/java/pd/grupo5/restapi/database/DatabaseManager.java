@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class DatabaseManager {
-    private final String JDBC_STRING = "jdbc:sqlite:/Users/asuryu/Documents/GitHub/PD/REST API/src/main/java/database.db";
+    private final String JDBC_STRING = "jdbc:sqlite:database.db";
     private static Connection db;
     static int user_id = -1;
 
