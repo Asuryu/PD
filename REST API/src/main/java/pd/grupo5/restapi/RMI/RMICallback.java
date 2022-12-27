@@ -28,31 +28,31 @@ public class RMICallback extends OncePerRequestFilter {
         switch(path){
             case "/api/v1/auth":
                 if(request.getMethod().equals("POST")){
-                    message = "New login attempt";
+                    message = "[POST] New login attempt";
                 }
                 break;
             case "/api/v1/users":
                 if(request.getMethod().equals("POST")){
-                    message = "[!] User list requested";
+                    message = "[POST] User list requested";
                 } else if (request.getMethod().equals("PUT")){
-                    message = "[!] User created";
+                    message = "[PUT] User created";
                 } else if(request.getMethod().equals("DELETE")){
-                    message = "[!] User deleted";
+                    message = "[DELETE] User deleted";
                 }
                 break;
             case "/api/v1/espetaculos":
                 if(request.getMethod().equals("GET")){
-                    message = "[!] Espetaculo list requested";
+                    message = "[GET] Show list requested";
                 }
                 break;
             case "/api/v1/get_paid_reservations":
                 if(request.getMethod().equals("GET")){
-                    message = "[!] Paid reservations requested";
+                    message = "[GET] Paid reservations requested";
                 }
                 break;
             case "/api/v1/get_unpaid_reservations":
                 if(request.getMethod().equals("GET")){
-                    message = "[!] Unpaid reservations requested";
+                    message = "[GET] Unpaid reservations requested";
                 }
                 break;
             default:
