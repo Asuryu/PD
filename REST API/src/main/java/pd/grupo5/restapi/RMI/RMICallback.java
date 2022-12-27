@@ -1,9 +1,5 @@
-package pd.grupo5.restapi;
+package pd.grupo5.restapi.RMI;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import pd.grupo5.restapi.database.DatabaseManager;
 
@@ -12,8 +8,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class RMICallback extends OncePerRequestFilter {
 
@@ -27,10 +21,18 @@ public class RMICallback extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // get request path
-        String path = request.getRequestURI().substring(request.getContextPath().length());
+        String path = request.getRequestURI();
         System.out.println(path);
-        servidorRMI.notifyClients(path);
+        // TODO: fazer um switch case (mensagens bonitinhas)
+        // request.getMethod(); - podes usar isto para saber se o pedido foi GET, POST, PUT, DELETE
+        // Boa sorte :)
+        switch(path){
+            case "/api/v1/auth": // EXEMPLO
+                servidorRMI.notifyClients("Um utilizador fez login");
+                break;
+            default:
+                break;
+        }
 
         filterChain.doFilter(request, response);
         DatabaseManager.close();

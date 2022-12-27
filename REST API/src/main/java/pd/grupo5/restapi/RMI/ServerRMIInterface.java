@@ -1,3 +1,5 @@
+package pd.grupo5.restapi.RMI;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
