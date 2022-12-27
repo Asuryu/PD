@@ -1,5 +1,6 @@
 package pd.grupo5.restapi.RMI;
 
+import com.nimbusds.jose.shaded.json.JSONObject;
 import org.springframework.web.filter.OncePerRequestFilter;
 import pd.grupo5.restapi.database.DatabaseManager;
 
@@ -23,16 +24,41 @@ public class RMICallback extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
         System.out.println(path);
-        // TODO: fazer um switch case OU if else (mensagens bonitinhas)
-        // request.getMethod(); - podes usar isto para saber se o pedido foi GET, POST, PUT, DELETE
-        // Boa sorte :)
+        String message = "";
         switch(path){
-            case "/api/v1/auth": // EXEMPLO
-                servidorRMI.notifyClients("Um utilizador fez login");
+            case "/api/v1/auth":
+                if(request.getMethod().equals("POST")){
+                    message = "New login attempt";
+                }
+                break;
+            case "/api/v1/users":
+                if(request.getMethod().equals("POST")){
+                    message = "[!] User list requested";
+                } else if (request.getMethod().equals("PUT")){
+                    message = "[!] User created";
+                } else if(request.getMethod().equals("DELETE")){
+                    message = "[!] User deleted";
+                }
+                break;
+            case "/api/v1/espetaculos":
+                if(request.getMethod().equals("GET")){
+                    message = "[!] Espetaculo list requested";
+                }
+                break;
+            case "/api/v1/get_paid_reservations":
+                if(request.getMethod().equals("GET")){
+                    message = "[!] Paid reservations requested";
+                }
+                break;
+            case "/api/v1/get_unpaid_reservations":
+                if(request.getMethod().equals("GET")){
+                    message = "[!] Unpaid reservations requested";
+                }
                 break;
             default:
                 break;
         }
+        servidorRMI.notifyClients(message);
 
         filterChain.doFilter(request, response);
         DatabaseManager.close();
