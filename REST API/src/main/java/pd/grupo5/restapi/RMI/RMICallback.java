@@ -27,8 +27,38 @@ public class RMICallback extends OncePerRequestFilter {
         // request.getMethod(); - podes usar isto para saber se o pedido foi GET, POST, PUT, DELETE
         // Boa sorte :)
         switch(path){
-            case "/api/v1/auth": // EXEMPLO
-                servidorRMI.notifyClients("Um utilizador fez login");
+            case "/api/v1/auth":
+                if(request.getMethod().equals("POST")){
+                    servidorRMI.notifyClients("[!] User logged in");
+                }
+                break;
+            case "/api/v1/users":
+                if(request.getMethod().equals("GET")){
+                    servidorRMI.notifyClients("[!] User list requested");
+                } else if (request.getMethod().equals("POST")){
+                    servidorRMI.notifyClients("[!] User created");
+                }
+                break;
+            case "/api/v1/users/{id}":
+                //Method that deletes a user
+                if(request.getMethod().equals("DELETE")){
+                    servidorRMI.notifyClients("[!] User deleted");
+                }
+                break;
+            case "/api/v1/espetaculos":
+                if(request.getMethod().equals("GET")){
+                    servidorRMI.notifyClients("[!] Espetaculo list requested");
+                }
+                break;
+            case "/api/v1/get_paid_reservations":
+                if(request.getMethod().equals("GET")){
+                    servidorRMI.notifyClients("[!] Paid reservations requested");
+                }
+                break;
+            case "/api/v1/get_unpaid_reservations":
+                if(request.getMethod().equals("GET")){
+                    servidorRMI.notifyClients("[!] Unpaid reservations requested");
+                }
                 break;
             default:
                 break;
