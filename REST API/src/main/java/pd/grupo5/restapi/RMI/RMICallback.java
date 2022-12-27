@@ -23,7 +23,7 @@ public class RMICallback extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
         System.out.println(path);
-        // TODO: fazer um switch case (mensagens bonitinhas)
+        // TODO: fazer um switch case OU if else (mensagens bonitinhas)
         // request.getMethod(); - podes usar isto para saber se o pedido foi GET, POST, PUT, DELETE
         // Boa sorte :)
         switch(path){
