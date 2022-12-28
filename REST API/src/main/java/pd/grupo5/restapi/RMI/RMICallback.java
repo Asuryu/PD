@@ -23,7 +23,6 @@ public class RMICallback extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        System.out.println(path);
         String message = "";
         switch(path){
             case "/api/v1/auth":
