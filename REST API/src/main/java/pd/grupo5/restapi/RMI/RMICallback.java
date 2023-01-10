@@ -31,8 +31,8 @@ public class RMICallback extends OncePerRequestFilter {
                 }
                 break;
             case "/api/v1/users":
-                if(request.getMethod().equals("POST")){
-                    message = "[POST] User list requested";
+                if(request.getMethod().equals("GET")){
+                    message = "[GET] User list requested";
                 } else if (request.getMethod().equals("PUT")){
                     message = "[PUT] User created";
                 } else if(request.getMethod().equals("DELETE")){
